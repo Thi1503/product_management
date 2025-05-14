@@ -28,12 +28,8 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        const ProductFormPage(), // Replace with your home page
-              ),
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const ProductFormPage()),
             );
           } else if (state is LoginFailure) {
             ScaffoldMessenger.of(
