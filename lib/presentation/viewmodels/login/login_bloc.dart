@@ -26,7 +26,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
       emit(LoginSuccess(user));
     } catch (e) {
-      emit(LoginFailure(e.toString()));
+      // emit(LoginFailure(e.toString()));
+      emit(LoginFailure("Đăng nhập thất bại"));
     }
   }
 

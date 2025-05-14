@@ -5,7 +5,6 @@ import '../../core/constants.dart';
 import '../../core/hive/hive_service.dart';
 
 import '../datasources/auth_remote.dart';
-import '../models/user_model.dart';
 
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';

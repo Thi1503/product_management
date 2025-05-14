@@ -54,18 +54,18 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   controller: _taxController,
                   decoration: const InputDecoration(labelText: 'Tax Code'),
-                  validator: Validators.validateNotEmpty,
+                  validator: Validators.validateTaxCode,
                 ),
                 TextFormField(
                   controller: _userController,
                   decoration: const InputDecoration(labelText: 'Username'),
-                  validator: Validators.validateNotEmpty,
+                  validator: Validators.validateUserName,
                 ),
                 TextFormField(
                   controller: _passController,
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
-                  validator: Validators.validateNotEmpty,
+                  validator: Validators.validatePassword,
                 ),
                 const SizedBox(height: 20),
                 BlocBuilder<LoginBloc, LoginState>(

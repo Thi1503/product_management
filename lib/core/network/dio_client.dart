@@ -18,9 +18,6 @@ class DioClient {
           baseUrl: Constants.apiBaseUrl,
           connectTimeout: const Duration(seconds: 5), // 5s để kết nối
           sendTimeout: const Duration(seconds: 5), // 5s để gửi request
-          receiveTimeout: const Duration(
-            seconds: 120,
-          ), // thời gian chờ phản hồi (ms)
         ),
       ) {
     // TODO: thêm interceptor (ví dụ: TokenInterceptor)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:product_management/core/bloc/bloc_observer.dart';
 import 'core/hive/hive_service.dart';
 import 'core/network/dio_client.dart';
 import 'data/repositories/auth_repository_impl.dart';
@@ -12,6 +13,9 @@ import 'presentation/views/login_page.dart';
 final getIt = GetIt.instance;
 
 void main() async {
+  // Đăng ký BlocObserver để theo dõi các sự kiện và trạng thái của Bloc
+  Bloc.observer = SimpleBlocObserver();
+  // Khởi tạo Flutter binding
   WidgetsFlutterBinding.ensureInitialized();
 
   // Khởi tạo Hive để lưu trữ local
