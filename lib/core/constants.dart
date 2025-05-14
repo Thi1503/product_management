@@ -6,4 +6,6 @@ class Constants {
 
   ///Key lưu token trong Hive
   static const String authTokenKey = 'auth_token';
+  static const String savedTaxCodeKey = 'saved_tax_code';
+  static const String savedUserKey = 'saved_username';
 }

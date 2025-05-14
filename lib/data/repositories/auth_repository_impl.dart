@@ -26,6 +26,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // lưu token
     await _hive.getAuthBox().put(Constants.authTokenKey, userModel.token);
+    // lưu taxCode
+    await _hive.getAuthBox().put(Constants.savedTaxCodeKey, taxCode);
+    // lưu username
+    await _hive.getAuthBox().put(Constants.savedUserKey, username);
 
     // map sang domain entity
     return User(token: userModel.token);
@@ -34,6 +38,8 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Xóa token đăng nhập
   @override
   void logout() {
-    _hive.getAuthBox().delete(Constants.authTokenKey);
+    final box = _hive.getAuthBox();
+    box.delete(Constants.authTokenKey);
+    // giữ nguyên savedTaxCodeKey & savedUserKey
   }
 }

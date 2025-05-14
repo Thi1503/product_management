@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:product_management/core/constants.dart';
+import 'package:product_management/core/hive/hive_service.dart';
+
 import 'package:product_management/presentation/views/product_form_page.dart';
+
+import '../../core/utils/validators.dart';
 import '../viewmodels/login/login_bloc.dart';
 import '../viewmodels/login/login_event.dart';
 import '../viewmodels/login/login_state.dart';
-import '../../core/utils/validators.dart';
 
 /// Widget màn Login
 class LoginPage extends StatefulWidget {
@@ -20,6 +25,16 @@ class _LoginPageState extends State<LoginPage> {
   final _userController = TextEditingController();
   final _passController = TextEditingController();
   bool _autovalidate = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    final box = GetIt.I<HiveService>().getAuthBox();
+    // Tiền điền nếu có
+    _taxController.text = box.get(Constants.savedTaxCodeKey, defaultValue: '');
+    _userController.text = box.get(Constants.savedUserKey, defaultValue: '');
+  }
 
   @override
   Widget build(BuildContext context) {
