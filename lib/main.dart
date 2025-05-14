@@ -9,7 +9,7 @@ import 'domain/usecases/login_usecase.dart';
 import 'presentation/viewmodels/login/login_bloc.dart';
 import 'presentation/views/login_page.dart';
 
-/// GetIt instance для đăng ký dependencies
+/// GetIt instance  đăng ký dependencies
 final getIt = GetIt.instance;
 
 void main() async {

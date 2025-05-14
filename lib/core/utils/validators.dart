@@ -10,6 +10,7 @@ class Validators {
     return null;
   }
 
+  /// Validate rằng mã số thuế không được để trống
   static String? validateTaxCode(String? value) {
     if (value == null || value.isEmpty) {
       return 'Mã số thuế không được để trống';
@@ -17,6 +18,7 @@ class Validators {
     return null;
   }
 
+  ///Varlidate rằng tên không được để trống
   static String? validateUserName(String? value) {
     if (value == null || value.isEmpty) {
       return 'Tài khoản không được để trống';
@@ -24,6 +26,7 @@ class Validators {
     return null;
   }
 
+  /// Varlidate rằng mật khẩu phảitừ 6 đến 50 ký tự
   static String? validatePassword(String? value) {
     if (value == null ||
         value.isEmpty ||
@@ -34,6 +37,4 @@ class Validators {
 
     return null;
   }
-
-  /// TODO: thêm hàm validate email, số điện thoại, mật khẩu mạnh...
 }
