@@ -1,26 +1,33 @@
-// config Dio, interceptor thêm token
-import 'package:dio/dio.dart';
-import 'package:product_management/core/constants.dart';
+// core/network/dio_client.dart
 
-/// Lớp cấu hình và khởi tạo Dio client dùng chung trong ứng dụng
-/// Thêm interceptor để đính kèm token và log request/response
+import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
+import 'package:product_management/core/constants.dart';
+import 'package:product_management/core/hive/hive_service.dart';
+
 class DioClient {
-  /// Instance của Dio đã cấu hình sẵn
   final Dio dio;
 
-  /// Constructor: khởi tạo Dio với BaseOptions
-  /// - baseUrl: URL gốc của API
-  /// - connectTimeout: thời gian chờ kết nối (ms)
-  /// - receiveTimeout: thời gian chờ phản hồi (ms)
   DioClient()
     : dio = Dio(
         BaseOptions(
           baseUrl: Constants.apiBaseUrl,
-          connectTimeout: const Duration(seconds: 5), // 5s để kết nối
-          sendTimeout: const Duration(seconds: 5), // 5s để gửi request
+          connectTimeout: const Duration(seconds: 5),
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
         ),
       ) {
-    // TODO: thêm interceptor (ví dụ: TokenInterceptor)
-    // dio.interceptors.add( ... );
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final hive = GetIt.I<HiveService>();
+          final token = hive.getAuthBox().get(Constants.authTokenKey);
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+      ),
+    );
   }
 }

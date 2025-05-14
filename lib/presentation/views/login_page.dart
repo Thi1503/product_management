@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:product_management/core/constants.dart';
 import 'package:product_management/core/hive/hive_service.dart';
+import 'package:product_management/main.dart';
+import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 
 import 'package:product_management/presentation/views/product_form_page.dart';
+import 'package:product_management/presentation/views/product_list_page.dart';
 
 import '../../core/utils/validators.dart';
 import '../viewmodels/login/login_bloc.dart';
@@ -44,12 +47,14 @@ class _LoginPageState extends State<LoginPage> {
         listener: (context, state) {
           if (state is LoginSuccess) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const ProductFormPage()),
+              MaterialPageRoute(
+                builder:
+                    (_) => BlocProvider<ProductListCubit>(
+                      create: (_) => getIt<ProductListCubit>()..loadInitial(),
+                      child: ProductListPage(),
+                    ),
+              ),
             );
-          } else if (state is LoginFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         child: Padding(
