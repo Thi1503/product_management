@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
+import 'package:product_management/presentation/views/login_page.dart';
 
 /// Widget chỉ chịu trách nhiệm hiển thị danh sách sản phẩm
 /// với load more và pull-to-refresh
@@ -25,6 +26,7 @@ class _ProductListPageState extends State<ProductListPage> {
     _scrollController.addListener(_onScroll);
   }
 
+  /// Hàm lắng nghe scroll
   void _onScroll() {
     final cubit = context.read<ProductListCubit>();
     final state = cubit.state;
@@ -40,6 +42,35 @@ class _ProductListPageState extends State<ProductListPage> {
     }
   }
 
+  /// Xác nhận đăng xuất
+  void _confirmLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Xác nhận'),
+            content: const Text('Bạn có chắc muốn đăng xuất?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Không'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Có'),
+              ),
+            ],
+          ),
+    );
+    if (shouldLogout == true) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    }
+  }
+
+  /// Hủy scroll controller
   @override
   void dispose() {
     _scrollController.dispose();
@@ -49,7 +80,13 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Danh sách Sản phẩm')),
+      appBar: AppBar(
+        title: const Text('Danh sách Sản phẩm'),
+        actions: [
+          IconButton(icon: const Icon(Icons.logout), onPressed: _confirmLogout),
+        ],
+      ),
+
       body: RefreshIndicator(
         onRefresh: () => context.read<ProductListCubit>().refresh(),
         child: BlocBuilder<ProductListCubit, ProductListState>(
