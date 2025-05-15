@@ -6,7 +6,7 @@ class FetchProductDetail {
 
   FetchProductDetail(this.productRepository);
 
-  Future<Product?> call(int productId) async {
-    return await productRepository.fetchProductById(productId);
+  Future<Product> call(int productId) {
+    return productRepository.fetchProductById(productId);
   }
 }

@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:product_management/core/hive/hive_service.dart';
 import 'package:product_management/data/models/product_model.dart';
+import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/domain/usecases/fetch_product_detail.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_state.dart';
 
@@ -11,49 +12,49 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
     : super(ProductDetailInitial());
 
   Future<void> loadDetail(int id) async {
-    // Lấy box đã mở sẵn (không mở lại)
     final box = Hive.box<ProductModel>(HiveService.productCacheBox);
 
-    // 1) Kiểm tra cache
     final cached = box.get(id);
     if (cached != null) {
       emit(ProductDetailLoaded(cached.toProduct()));
-      return;
+    } else {
+      emit(ProductDetailLoading());
     }
 
-    // 2) Emit loading
-    emit(ProductDetailLoading());
-
     try {
-      // 3) Gọi API
       final product = await fetchDetail(id);
-      if (product == null) {
-        emit(ProductDetailError('Product not found'));
-        return;
+      // In debug hai đối tượng để so sánh
+      print('Cached product: ${cached?.toProduct()}');
+      print('Fetched product: $product');
+      // So sánh product mới với cached (dữ liệu cũ)
+      bool isDifferent =
+          cached == null || !_isProductEqual(product, cached.toProduct());
+
+      if (isDifferent) {
+        final model = ProductModel(
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+          cover: product.cover,
+        );
+        await box.put(id, model);
+        emit(ProductDetailLoaded(product));
       }
-
-      // 4) Lưu vào cache
-      final model = ProductModel(
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: product.quantity,
-        cover: product.cover,
-      );
-      await box.put(id, model);
-
-      // 5) Emit loaded
-      emit(ProductDetailLoaded(product));
+      // Nếu giống nhau thì không emit lại
     } catch (e) {
-      emit(ProductDetailError(e.toString()));
+      if (cached == null) {
+        emit(ProductDetailError(e.toString()));
+      }
     }
   }
 
-  Future<void> deleteProduct(int id) async {
-    final box = Hive.box<ProductModel>(HiveService.productCacheBox);
-    if (box.containsKey(id)) {
-      await box.delete(id);
-    }
-    // emit state nếu cần...
+  /// Hàm so sánh 2 product domain có giống nhau không
+  bool _isProductEqual(Product a, Product b) {
+    return a.id == b.id &&
+        a.name == b.name &&
+        a.price == b.price &&
+        a.quantity == b.quantity &&
+        a.cover == b.cover;
   }
 }

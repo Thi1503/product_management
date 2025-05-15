@@ -25,35 +25,32 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-  /// Lấy chi tiết sản phẩm theo id và cache vào Hive
+  /// Lấy chi tiết sản phẩm, ưu tiên cache local, nếu không có thì gọi API
   @override
-  Future<Product?> fetchProductById(int id) async {
+  Future<Product> fetchProductById(int id) async {
     final box = _hive.getProductBox();
 
     try {
-      // Kiểm tra xem sản phẩm đã được cache chưa
-      final cachedModel = box.get(id);
-      if (cachedModel != null) {
-        return cachedModel.toProduct();
-      }
-
-      // Nếu chưa có trong cache, gọi API để lấy sản phẩm
+      // 1) Gọi API lấy chi tiết sản phẩm mới nhất
       final model = await ProductRemote(_dio).fetchProductById(id);
       if (model == null) {
         throw Exception('Product not found');
       }
 
-      // 3) Lưu vào cache
+      // 2) Lưu model vào cache (cập nhật cache)
       await box.put(id, model);
 
-      // Lưu vào cache
-      _hive.getProductBox().put(id, model);
-
-      // Chuyển sang domain entity Product
-      // 4) Trả về domain entity
+      // 3) Trả về domain entity
       return model.toProduct();
     } catch (e) {
+      // Nếu gọi API lỗi, fallback trả về cache nếu có
+      final cachedModel = box.get(id);
+      if (cachedModel != null) {
+        return cachedModel.toProduct();
+      }
       throw Exception('Failed to fetch product: $e');
     }
   }
+
+  /// Lấy chi tiết, ưu tiên cache local
 }
