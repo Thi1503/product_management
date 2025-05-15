@@ -28,17 +28,18 @@ class _ProductListPageState extends State<ProductListPage> {
 
   /// Hàm lắng nghe scroll
   void _onScroll() {
-    final cubit = context.read<ProductListCubit>();
-    final state = cubit.state;
-    // Khi còn dữ liệu để load thêm, chưa đang load và scroll gần đáy
-    if (state is ProductListLoaded &&
-        state.hasMore &&
-        !_isLoadingMore &&
-        _scrollController.position.extentAfter < 200) {
-      _isLoadingMore = true;
-      cubit.loadMore().whenComplete(() {
-        _isLoadingMore = false;
-      });
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currScroll = _scrollController.position.pixels;
+
+    // khi đã ở đáy (và không phải tại top), trigger loadMore
+    if (currScroll >= maxScroll && !_isLoadingMore) {
+      final cubit = context.read<ProductListCubit>();
+      final state = cubit.state;
+      if (state is ProductListLoaded && state.hasMore) {
+        _isLoadingMore = true;
+        cubit.loadMore().whenComplete(() => _isLoadingMore = false);
+      }
     }
   }
 
@@ -98,20 +99,31 @@ class _ProductListPageState extends State<ProductListPage> {
 
             // 2. Loaded (có thể kèm spinner cuối để loadMore)
             if (state is ProductListLoaded) {
-              return ListView.builder(
-                controller: _scrollController,
-                itemCount: state.products.length + (state.hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index < state.products.length) {
-                    final p = state.products[index];
-                    return ProductItem(product: p);
+              return NotificationListener<ScrollNotification>(
+                onNotification: (notif) {
+                  if (notif.metrics.pixels >= notif.metrics.maxScrollExtent &&
+                      !_isLoadingMore) {
+                    _isLoadingMore = true;
+                    context.read<ProductListCubit>().loadMore().whenComplete(
+                      () => _isLoadingMore = false,
+                    );
                   }
-                  // index == products.length → spinner load more
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                  return false;
                 },
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: state.products.length + (state.hasMore ? 1 : 0),
+                  itemBuilder: (ctx, i) {
+                    if (i < state.products.length) {
+                      return ProductItem(product: state.products[i]);
+                    }
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                ),
               );
             }
 

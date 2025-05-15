@@ -7,7 +7,7 @@ import '../../../domain/usecases/fetch_products.dart';
 class ProductListCubit extends Cubit<ProductListState> {
   final FetchProducts fetchProducts;
   int _currentPage = 1;
-  final int _pageSize = 100;
+  final int _pageSize = 10;
 
   ProductListCubit({required this.fetchProducts}) : super(ProductListInitial());
 

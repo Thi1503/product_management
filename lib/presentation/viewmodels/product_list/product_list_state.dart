@@ -13,7 +13,10 @@ class ProductListLoading extends ProductListState {}
 
 /// Load thành công
 class ProductListLoaded extends ProductListState {
+  /// Danh sách sản phẩm
   final List<Product> products;
+
+  /// Có còn trang để load thêm không
   final bool hasMore;
 
   const ProductListLoaded({required this.products, required this.hasMore});
