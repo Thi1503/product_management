@@ -15,22 +15,30 @@ class ProductListPage extends StatefulWidget {
 
 class _ProductListPageState extends State<ProductListPage> {
   final _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
-    // Lần đầu vào, load trang đầu
-    context.read<ProductListCubit>().loadInitial();
-    // _scrollController.addListener(_onScroll);
+    final cubit = context.read<ProductListCubit>();
+    cubit.loadInitial();
+    _scrollController.addListener(_onScroll);
   }
 
-  // void _onScroll() {
-  //   // Khi cuộn gần đáy, tự động load thêm
-  //   if (_scrollController.position.pixels >=
-  //       _scrollController.position.maxScrollExtent - 100) {
-  //     // context.read<ProductListCubit>().loadMore();
-  //   }
-  // }
+  void _onScroll() {
+    final cubit = context.read<ProductListCubit>();
+    final state = cubit.state;
+    // Khi còn dữ liệu để load thêm, chưa đang load và scroll gần đáy
+    if (state is ProductListLoaded &&
+        state.hasMore &&
+        !_isLoadingMore &&
+        _scrollController.position.extentAfter < 200) {
+      _isLoadingMore = true;
+      cubit.loadMore().whenComplete(() {
+        _isLoadingMore = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -46,26 +54,35 @@ class _ProductListPageState extends State<ProductListPage> {
         onRefresh: () => context.read<ProductListCubit>().refresh(),
         child: BlocBuilder<ProductListCubit, ProductListState>(
           builder: (context, state) {
+            // 1. Initial / Loading đầu
             if (state is ProductListInitial || state is ProductListLoading) {
-              // Show loading ngay cả với initial
-              return const LoadingIndicator();
+              return const Center(child: CircularProgressIndicator());
             }
 
+            // 2. Loaded (có thể kèm spinner cuối để loadMore)
             if (state is ProductListLoaded) {
               return ListView.builder(
                 controller: _scrollController,
                 itemCount: state.products.length + (state.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == state.products.length) {
-                    return const Center(child: CircularProgressIndicator());
+                  if (index < state.products.length) {
+                    final p = state.products[index];
+                    return ProductItem(product: p);
                   }
-                  return ProductItem(product: state.products[index]);
+                  // index == products.length → spinner load more
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
                 },
               );
             }
+
+            // 3. Error
             if (state is ProductListError) {
               return Center(child: Text('Lỗi: ${state.message}'));
             }
+
             return const SizedBox.shrink();
           },
         ),
@@ -86,8 +103,19 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      leading: ClipOval(
+        child: Image.network(
+          product.cover,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.error),
+        ),
+      ),
+
       title: Text(product.name),
       subtitle: Text('Giá: ${product.price}'),
+      trailing: Text('SL: ${product.quantity}'),
       onTap: () {},
     );
   }

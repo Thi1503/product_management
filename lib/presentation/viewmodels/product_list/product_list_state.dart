@@ -27,6 +27,12 @@ class ProductListLoaded extends ProductListState {
   }
 }
 
+/// Đang load thêm (từ trang cũ)
+class ProductListLoadingMore extends ProductListState {
+  final List<Product> oldProducts;
+  const ProductListLoadingMore(this.oldProducts);
+}
+
 /// Load lỗi
 class ProductListError extends ProductListState {
   final String message;

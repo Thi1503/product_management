@@ -6,7 +6,6 @@ import 'package:product_management/core/hive/hive_service.dart';
 import 'package:product_management/main.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 
-import 'package:product_management/presentation/views/product_form_page.dart';
 import 'package:product_management/presentation/views/product_list_page.dart';
 
 import '../../core/utils/validators.dart';
