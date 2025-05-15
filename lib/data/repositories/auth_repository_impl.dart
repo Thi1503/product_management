@@ -19,6 +19,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _hive = hive;
 
   /// Gọi login, lưu token vào Hive và trả về domain-entity User
+
   @override
   Future<User> login(String taxCode, String username, String password) async {
     // gọi API, nhận về UserModel
@@ -26,6 +27,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // lưu token
     await _hive.getAuthBox().put(Constants.authTokenKey, userModel.token);
+    // debug: in ra console token vừa nhận
+    print('🔑 [Auth] Received & stored token: ${userModel.token}');
+
     // lưu taxCode
     await _hive.getAuthBox().put(Constants.savedTaxCodeKey, taxCode);
     // lưu username
