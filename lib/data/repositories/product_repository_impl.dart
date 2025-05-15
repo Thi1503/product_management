@@ -18,20 +18,42 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       // Gọi API lấy danh sách ProductModel
       final models = await ProductRemote(_dio).fetchProducts(page, size);
-      // Chuyển sang domain entity Product
-      return models
-          .map(
-            (m) => Product(
-              id: m.id,
-              name: m.name,
-              price: m.price,
-              quantity: m.quantity,
-              cover: m.cover,
-            ),
-          )
-          .toList();
+      // Dùng toProduct() để chuyển sang domain entity
+      return models.map((m) => m.toProduct()).toList();
     } catch (e) {
       throw Exception('Failed to fetch products: $e');
+    }
+  }
+
+  /// Lấy chi tiết sản phẩm theo id và cache vào Hive
+  @override
+  Future<Product?> fetchProductById(int id) async {
+    final box = _hive.getProductBox();
+
+    try {
+      // Kiểm tra xem sản phẩm đã được cache chưa
+      final cachedModel = box.get(id);
+      if (cachedModel != null) {
+        return cachedModel.toProduct();
+      }
+
+      // Nếu chưa có trong cache, gọi API để lấy sản phẩm
+      final model = await ProductRemote(_dio).fetchProductById(id);
+      if (model == null) {
+        throw Exception('Product not found');
+      }
+
+      // 3) Lưu vào cache
+      await box.put(id, model);
+
+      // Lưu vào cache
+      _hive.getProductBox().put(id, model);
+
+      // Chuyển sang domain entity Product
+      // 4) Trả về domain entity
+      return model.toProduct();
+    } catch (e) {
+      throw Exception('Failed to fetch product: $e');
     }
   }
 }

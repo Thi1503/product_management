@@ -31,4 +31,26 @@ class ProductRemote {
       throw Exception('Unexpected error: $e');
     }
   }
+
+  ///Gửi request lấy chi tiết sản phẩm dựa vào id
+  ///Trả về ProductModel
+  ///Nếu không tìm thấy sản phẩm, trả về null
+  ///Nếu có lỗi, ném ra Exception
+  Future<ProductModel?> fetchProductById(int id) async {
+    try {
+      final resp = await dio.get('/products/$id');
+      if (resp.statusCode == 200) {
+        return ProductModel.fromJson(resp.data);
+      } else if (resp.statusCode == 404) {
+        return null;
+      } else {
+        throw Exception('Failed to fetch product: ${resp.data}');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data['message'] ?? e.message;
+      throw Exception('Failed to fetch product: $msg');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
 }

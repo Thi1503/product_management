@@ -1,8 +1,16 @@
+// lib/data/models/product_model.dart
+
+import 'package:product_management/domain/entities/product.dart';
+
 class ProductModel {
   final int id;
+
   final String name;
+
   final double price;
+
   final int quantity;
+
   final String cover;
 
   ProductModel({
@@ -13,25 +21,34 @@ class ProductModel {
     required this.cover,
   });
 
-  /// Tạo từ JSON
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final data = (json['data'] as Map<String, dynamic>?) ?? json;
+    int parseInt(dynamic v) =>
+        v is num ? v.toInt() : int.tryParse(v?.toString() ?? '') ?? 0;
+    double parseDouble(dynamic v) =>
+        v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '') ?? 0.0;
     return ProductModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      price: (json['price'] as num).toDouble(),
-      quantity: json['quantity'] as int,
-      cover: json['cover'] as String,
+      id: parseInt(data['id']),
+      name: data['name'] as String? ?? '',
+      price: parseDouble(data['price']),
+      quantity: parseInt(data['quantity']),
+      cover: data['cover'] as String? ?? '',
     );
   }
 
-  /// Chuyển sang JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'price': price,
-      'quantity': quantity,
-      'cover': cover,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'price': price,
+    'quantity': quantity,
+    'cover': cover,
+  };
+
+  Product toProduct() => Product(
+    id: id,
+    name: name,
+    price: price,
+    quantity: quantity,
+    cover: cover,
+  );
 }

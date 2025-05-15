@@ -13,8 +13,8 @@ class DioClient {
         BaseOptions(
           baseUrl: Constants.apiBaseUrl,
           connectTimeout: const Duration(seconds: 5),
-          sendTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
+          sendTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 120),
         ),
       ) {
     // 1) Thêm LogInterceptor để log toàn bộ request/response
@@ -27,29 +27,7 @@ class DioClient {
       ),
     );
 
-    // 2) Sửa onRequest để in URI + headers trước khi gửi
-    // dio.interceptors.add(
-    //   InterceptorsWrapper(
-    //     onRequest: (options, handler) {
-    //       final hive = GetIt.I<HiveService>();
-    //       final token =
-    //           hive.getAuthBox().get(Constants.authTokenKey)?.toString().trim();
-
-    //       // Debug info
-    //       print('→ [Dio] Request: ${options.method} ${options.uri}');
-    //       print('→ [Dio] Before setting auth headers: ${options.headers}');
-    //       print('→ [Dio] Using token: $token');
-
-    //       if (token != null && token.isNotEmpty) {
-    //         options.headers['Authorization'] = 'Bearer $token';
-    //       }
-
-    //       print('→ [Dio] Final headers: ${options.headers}');
-    //       handler.next(options);
-    //     },
-    //   ),
-    // );
-
+    // 2) Thêm Interceptor để tự động thêm token vào header
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {

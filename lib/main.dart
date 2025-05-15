@@ -3,20 +3,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:product_management/domain/usecases/fetch_product_detail.dart';
+import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
 
 import 'core/bloc/bloc_observer.dart';
 import 'core/hive/hive_service.dart';
 import 'core/network/dio_client.dart';
-
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/product_repository_impl.dart';
-
-import 'domain/usecases/login_usecase.dart';
 import 'domain/usecases/fetch_products.dart';
-
+import 'domain/usecases/login_usecase.dart';
 import 'presentation/viewmodels/login/login_bloc.dart';
 import 'presentation/viewmodels/product_list/product_list_cubit.dart';
-
 import 'presentation/views/login_page.dart';
 
 final getIt = GetIt.instance;
@@ -51,6 +49,9 @@ Future<void> main() async {
   getIt.registerLazySingleton<FetchProducts>(
     () => FetchProducts(getIt<ProductRepositoryImpl>()),
   );
+  getIt.registerLazySingleton<FetchProductDetail>(
+    () => FetchProductDetail(getIt<ProductRepositoryImpl>()),
+  );
 
   // 4) Blocs / Cubits
   getIt.registerFactory<LoginBloc>(
@@ -58,6 +59,10 @@ Future<void> main() async {
   );
   getIt.registerFactory<ProductListCubit>(
     () => ProductListCubit(fetchProducts: getIt<FetchProducts>()),
+  );
+
+  getIt.registerFactory<ProductDetailCubit>(
+    () => ProductDetailCubit(fetchDetail: getIt<FetchProductDetail>()),
   );
 
   runApp(const AppRoot());

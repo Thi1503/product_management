@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
               MaterialPageRoute(
                 builder:
                     (_) => BlocProvider<ProductListCubit>(
-                      create: (_) => getIt<ProductListCubit>()..loadInitial(),
+                      create: (_) => getIt<ProductListCubit>(),
                       child: ProductListPage(),
                     ),
               ),

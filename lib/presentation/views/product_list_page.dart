@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:product_management/domain/entities/product.dart';
+import 'package:product_management/main.dart';
+import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
 import 'package:product_management/presentation/views/login_page.dart';
+import 'package:product_management/presentation/views/product_detail_page.dart';
 
 /// Widget chỉ chịu trách nhiệm hiển thị danh sách sản phẩm
 /// với load more và pull-to-refresh
@@ -165,7 +168,19 @@ class ProductItem extends StatelessWidget {
       title: Text(product.name),
       subtitle: Text('Giá: ${product.price}'),
       trailing: Text('SL: ${product.quantity}'),
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) {
+              final id = product.id;
+              return BlocProvider<ProductDetailCubit>(
+                create: (_) => getIt<ProductDetailCubit>(),
+                child: ProductDetailPage(productId: id),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

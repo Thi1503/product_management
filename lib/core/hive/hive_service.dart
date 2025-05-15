@@ -1,25 +1,29 @@
-// init, box mở sẵn token, cache
+// lib/core/hive/hive.dart
+
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:product_management/core/hive/product_model_adapter.dart';
+import 'package:product_management/data/models/product_model.dart';
 
-/// Lớp xử lý khởi tạo và truy xuất các Hive box
 class HiveService {
-  /// Tên box lưu thông tin xác thực (token, user)
   static const String authBox = 'authBox';
-
-  /// Tên box cache chi tiết sản phẩm
   static const String productCacheBox = 'productCache';
 
-  /// Khởi tạo Hive và mở các box cần thiết
-  /// Gọi `await HiveService.init()` trong main()
+  /// Gọi 1 lần duy nhất khi khởi động app (trong main)
   static Future<void> init() async {
     await Hive.initFlutter();
-    await Hive.openBox(authBox);
-    await Hive.openBox(productCacheBox);
+
+    // Đăng ký adapter cho ProductModel
+    Hive.registerAdapter(ProductModelAdapter());
+
+    // Chỉ mở box nếu nó chưa được mở
+    if (!Hive.isBoxOpen(productCacheBox)) {
+      await Hive.openBox<ProductModel>(productCacheBox);
+    }
+    if (!Hive.isBoxOpen(authBox)) {
+      await Hive.openBox(authBox);
+    }
   }
 
-  /// Lấy hộp lưu authentication
   Box getAuthBox() => Hive.box(authBox);
-
-  /// Lấy hộp cache sản phẩm
-  Box getProductBox() => Hive.box(productCacheBox);
+  Box<ProductModel> getProductBox() => Hive.box<ProductModel>(productCacheBox);
 }
