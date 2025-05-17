@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive/hive.dart';
 import 'package:product_management/domain/usecases/fetch_product_detail.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
 

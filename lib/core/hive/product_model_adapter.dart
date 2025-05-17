@@ -10,7 +10,7 @@ class ProductModelAdapter extends TypeAdapter<ProductModel> {
     return ProductModel(
       id: reader.readInt(),
       name: reader.readString(),
-      price: reader.readDouble(),
+      price: reader.readInt(),
       quantity: reader.readInt(),
       cover: reader.readString(),
     );
@@ -20,7 +20,7 @@ class ProductModelAdapter extends TypeAdapter<ProductModel> {
   void write(BinaryWriter writer, ProductModel obj) {
     writer.writeInt(obj.id);
     writer.writeString(obj.name);
-    writer.writeDouble(obj.price);
+    writer.writeInt(obj.price);
     writer.writeInt(obj.quantity);
     writer.writeString(obj.cover);
   }

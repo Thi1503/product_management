@@ -7,7 +7,7 @@ class ProductModel {
 
   final String name;
 
-  final double price;
+  final int price;
 
   final int quantity;
 
@@ -25,12 +25,10 @@ class ProductModel {
     final data = (json['data'] as Map<String, dynamic>?) ?? json;
     int parseInt(dynamic v) =>
         v is num ? v.toInt() : int.tryParse(v?.toString() ?? '') ?? 0;
-    double parseDouble(dynamic v) =>
-        v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '') ?? 0.0;
     return ProductModel(
       id: parseInt(data['id']),
       name: data['name'] as String? ?? '',
-      price: parseDouble(data['price']),
+      price: parseInt(data['price']),
       quantity: parseInt(data['quantity']),
       cover: data['cover'] as String? ?? '',
     );
