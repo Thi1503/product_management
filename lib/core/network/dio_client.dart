@@ -14,17 +14,12 @@ class DioClient {
           baseUrl: Constants.apiBaseUrl,
           connectTimeout: const Duration(seconds: 5),
           sendTimeout: const Duration(seconds: 60),
-          receiveTimeout: const Duration(seconds: 120),
+          // receiveTimeout: const Duration(seconds: 120),
         ),
       ) {
     // 1) Thêm LogInterceptor để log toàn bộ request/response
     dio.interceptors.add(
-      LogInterceptor(
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: true,
-        responseBody: true,
-      ),
+      LogInterceptor(requestHeader: true, requestBody: true),
     );
 
     // 2) Thêm Interceptor để tự động thêm token vào header
@@ -35,7 +30,7 @@ class DioClient {
           final token =
               hive.getAuthBox().get(Constants.authTokenKey)?.toString().trim();
           if (token != null && token.isNotEmpty) {
-            // gửi đúng theo Postman: chỉ mình token, không kèm "Bearer "
+            // gửi đúng theo Postman: chỉ mình token
             options.headers['Authorization'] = token;
           }
           handler.next(options);

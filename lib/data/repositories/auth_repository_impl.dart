@@ -27,8 +27,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // lưu token
     await _hive.getAuthBox().put(Constants.authTokenKey, userModel.token);
-    // debug: in ra console token vừa nhận
-    print('🔑 [Auth] Received & stored token: ${userModel.token}');
 
     // lưu taxCode
     await _hive.getAuthBox().put(Constants.savedTaxCodeKey, taxCode);

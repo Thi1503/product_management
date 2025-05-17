@@ -169,17 +169,23 @@ class ProductItem extends StatelessWidget {
       subtitle: Text('Giá: ${product.price}'),
       trailing: Text('SL: ${product.quantity}'),
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (ctx) {
-              final id = product.id;
-              return BlocProvider<ProductDetailCubit>(
-                create: (_) => getIt<ProductDetailCubit>(),
-                child: ProductDetailPage(productId: id),
-              );
-            },
-          ),
-        );
+        Navigator.of(context)
+            .push<bool>(
+              MaterialPageRoute(
+                builder: (ctx) {
+                  return BlocProvider<ProductDetailCubit>(
+                    create: (_) => getIt<ProductDetailCubit>(),
+                    child: ProductDetailPage(productId: product.id),
+                  );
+                },
+              ),
+            )
+            .then((deleted) {
+              if (deleted == true) {
+                // nếu quay về với deleted==true thì refresh lại danh sách
+                context.read<ProductListCubit>().refresh();
+              }
+            });
       },
     );
   }

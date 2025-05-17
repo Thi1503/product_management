@@ -20,7 +20,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     super.initState();
     _cubit = context.read<ProductDetailCubit>();
     print('--> initState calling loadDetail(${widget.productId})');
-    _cubit.loadDetail(widget.productId); // ← BẮT BUỘC phải gọi ở đây
+    _cubit.loadDetail(widget.productId);
   }
 
   @override
@@ -56,7 +56,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         },
       ),
 
-      // Nút Edit / Delete nếu cần
+      // Nút Edit
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -68,18 +68,47 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             },
           ),
           const SizedBox(height: 8),
+
+          // Nút Delete
           FloatingActionButton(
             heroTag: 'delete',
             child: const Icon(Icons.delete),
-            onPressed: () {
-              // Xóa sản phẩm
-              _cubit.deleteProduct(widget.productId);
-              // Hiện thông báo xóa thành công
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Xóa sản phẩm thành công')),
+            onPressed: () async {
+              // 1. Xác nhận
+              final shouldDelete = await showDialog<bool>(
+                context: context,
+                builder:
+                    (_) => AlertDialog(
+                      title: const Text('Xác nhận xóa'),
+                      content: const Text('Bạn có chắc muốn xóa sản phẩm này?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Hủy'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Xóa'),
+                        ),
+                      ],
+                    ),
               );
-              // Quay về trang trước
-              Navigator.of(context).pop();
+
+              if (shouldDelete != true) return;
+
+              // 2. Thực hiện xóa và đợi hoàn tất
+              try {
+                await _cubit.deleteProduct(widget.productId);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Xóa sản phẩm thành công')),
+                );
+                // 3. Quay về và báo ListPage refresh
+                Navigator.of(context).pop(true);
+              } catch (e) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Xóa thất bại: $e')));
+              }
             },
           ),
         ],
