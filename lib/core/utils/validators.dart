@@ -37,4 +37,48 @@ class Validators {
 
     return null;
   }
+
+  /// Validate rằng tên sản phẩm không được để trống
+  static String? validateProductName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Vui lòng nhập tên sản phẩm';
+    }
+    return null;
+  }
+
+  //// Validate rằng giá sản phẩm không được để trống và phải là số dương
+  static String? validateProductPrice(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Vui lòng nhập giá';
+    }
+    final price = int.tryParse(value);
+    if (price == null || price < 0) {
+      return 'Giá không hợp lệ';
+    }
+    return null;
+  }
+
+  /// Validate rằng số lượng sản phẩm không được để trống và phải là số dương
+  static String? validateProductQuantity(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Vui lòng nhập số lượng';
+    }
+    final qty = int.tryParse(value);
+    if (qty == null || qty < 0) {
+      return 'Số lượng không hợp lệ';
+    }
+    return null;
+  }
+
+  /// Validate rằng link ảnh không được để trống và phải là link hợp lệ
+  static String? validateProductCover(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Vui lòng nhập link ảnh';
+    }
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasAbsolutePath) {
+      return 'Link không hợp lệ';
+    }
+    return null;
+  }
 }

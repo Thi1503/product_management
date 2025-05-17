@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:product_management/core/utils/utils.dart';
 import 'package:product_management/data/models/product_model.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
@@ -14,11 +14,12 @@ class ProductFormPage extends StatefulWidget {
 }
 
 class _ProductFormPageState extends State<ProductFormPage> {
+  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
   late final TextEditingController _quantityController;
   late final TextEditingController _coverController;
-
+  bool _autovalidate = false;
   @override
   void initState() {
     super.initState();
@@ -42,18 +43,20 @@ class _ProductFormPageState extends State<ProductFormPage> {
   }
 
   void _onSave() {
-    final newProduct = ProductModel(
-      id: widget.product?.id ?? 0,
-      name: _nameController.text.trim(),
-      price: int.tryParse(_priceController.text) ?? 0,
-      quantity: int.tryParse(_quantityController.text) ?? 0,
-      cover: _coverController.text.trim(),
-    );
-    final cubit = context.read<ProductFormCubit>();
-    if (widget.product == null) {
-      cubit.createProduct(newProduct);
-    } else {
-      cubit.updateProduct(newProduct);
+    if (_formKey.currentState!.validate()) {
+      final newProduct = ProductModel(
+        id: widget.product?.id ?? 0,
+        name: _nameController.text.trim(),
+        price: int.parse(_priceController.text),
+        quantity: int.parse(_quantityController.text),
+        cover: _coverController.text.trim(),
+      );
+      final cubit = context.read<ProductFormCubit>();
+      if (widget.product == null) {
+        cubit.createProduct(newProduct);
+      } else {
+        cubit.updateProduct(newProduct);
+      }
     }
   }
 
@@ -62,7 +65,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
     return BlocConsumer<ProductFormCubit, ProductFormState>(
       listener: (ctx, state) {
         if (state is ProductFormSuccess) {
-          // Ẩn bàn phím trước khi pop
           FocusScope.of(ctx).unfocus();
           Navigator.of(ctx).pop(true);
         }
@@ -84,45 +86,67 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Tên sản phẩm',
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode:
+                          _autovalidate
+                              ? AutovalidateMode.always
+                              : AutovalidateMode.disabled,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Tên sản phẩm',
+                            ),
+                            validator: Validators.validateProductName,
                           ),
-                        ),
-                        TextField(
-                          controller: _priceController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Giá sản phẩm',
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _priceController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Giá sản phẩm',
+                            ),
+                            validator: Validators.validateProductPrice,
                           ),
-                        ),
-                        TextField(
-                          controller: _quantityController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Số lượng sản phẩm',
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _quantityController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Số lượng sản phẩm',
+                            ),
+                            validator: Validators.validateProductQuantity,
                           ),
-                        ),
-                        TextField(
-                          controller: _coverController,
-                          keyboardType: TextInputType.url,
-                          decoration: const InputDecoration(
-                            labelText: 'Link ảnh sản phẩm',
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _coverController,
+                            keyboardType: TextInputType.url,
+                            decoration: const InputDecoration(
+                              labelText: 'Link ảnh sản phẩm',
+                            ),
+                            validator: Validators.validateProductCover,
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _onSave,
-                          child: Text(
-                            widget.product == null
-                                ? 'Tạo Sản Phẩm'
-                                : 'Cập Nhật',
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _autovalidate = true;
+                                });
+                                _onSave();
+                              },
+                              child: Text(
+                                widget.product == null
+                                    ? 'Tạo Sản Phẩm'
+                                    : 'Cập Nhật',
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
         );
