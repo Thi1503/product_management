@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:hive/hive.dart';
+import 'package:product_management/domain/usecases/create_product.dart';
 import 'package:product_management/domain/usecases/fetch_product_detail.dart';
+import 'package:product_management/domain/usecases/update_product.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
+import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
 
 import 'core/bloc/bloc_observer.dart';
 import 'core/hive/hive_service.dart';
@@ -53,6 +55,12 @@ Future<void> main() async {
   getIt.registerLazySingleton<FetchProductDetail>(
     () => FetchProductDetail(getIt<ProductRepositoryImpl>()),
   );
+  getIt.registerLazySingleton<UpdateProduct>(
+    () => UpdateProduct(getIt<ProductRepositoryImpl>()),
+  );
+  getIt.registerLazySingleton<CreateProduct>(
+    () => CreateProduct(getIt<ProductRepositoryImpl>()),
+  );
 
   // 4) Blocs / Cubits
   getIt.registerFactory<LoginBloc>(
@@ -64,6 +72,12 @@ Future<void> main() async {
 
   getIt.registerFactory<ProductDetailCubit>(
     () => ProductDetailCubit(fetchDetail: getIt<FetchProductDetail>()),
+  );
+  getIt.registerFactory<ProductFormCubit>(
+    () => ProductFormCubit(
+      createProductUseCase: getIt<CreateProduct>(),
+      updateProductUseCase: getIt<UpdateProduct>(),
+    ),
   );
 
   runApp(const AppRoot());

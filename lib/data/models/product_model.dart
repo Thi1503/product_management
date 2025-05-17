@@ -34,13 +34,9 @@ class ProductModel {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'price': price,
-    'quantity': quantity,
-    'cover': cover,
-  };
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'price': price, 'quantity': quantity, 'cover': cover};
+  }
 
   Product toProduct() => Product(
     id: id,

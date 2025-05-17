@@ -1,45 +1,132 @@
-// lib/presentation/views/product_form_page.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../viewmodels/login/login_bloc.dart';
-import '../viewmodels/login/login_event.dart';
-import '../viewmodels/login/login_state.dart';
-import 'login_page.dart';
+import 'package:product_management/data/models/product_model.dart';
+import 'package:product_management/domain/entities/product.dart';
+import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
 
-class ProductFormPage extends StatelessWidget {
-  const ProductFormPage({Key? key}) : super(key: key);
+class ProductFormPage extends StatefulWidget {
+  final Product? product;
+  const ProductFormPage({Key? key, this.product}) : super(key: key);
+
+  @override
+  State<ProductFormPage> createState() => _ProductFormPageState();
+}
+
+class _ProductFormPageState extends State<ProductFormPage> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _quantityController;
+  late final TextEditingController _coverController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.product?.name ?? '');
+    _priceController = TextEditingController(
+      text: widget.product?.price.toString() ?? '',
+    );
+    _quantityController = TextEditingController(
+      text: widget.product?.quantity.toString() ?? '',
+    );
+    _coverController = TextEditingController(text: widget.product?.cover ?? '');
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    _quantityController.dispose();
+    _coverController.dispose();
+    super.dispose();
+  }
+
+  void _onSave() {
+    final newProduct = ProductModel(
+      id: widget.product?.id ?? 0,
+      name: _nameController.text.trim(),
+      price: int.tryParse(_priceController.text) ?? 0,
+      quantity: int.tryParse(_quantityController.text) ?? 0,
+      cover: _coverController.text.trim(),
+    );
+    final cubit = context.read<ProductFormCubit>();
+    if (widget.product == null) {
+      cubit.createProduct(newProduct);
+    } else {
+      cubit.updateProduct(newProduct);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LoginBloc, LoginState>(
-      listener: (context, state) {
-        if (state is LoginInitial) {
-          // logout thành công → quay lại LoginPage và xoá navigation stack
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-            (route) => false,
-          );
+    return BlocConsumer<ProductFormCubit, ProductFormState>(
+      listener: (ctx, state) {
+        if (state is ProductFormSuccess) {
+          // Ẩn bàn phím trước khi pop
+          FocusScope.of(ctx).unfocus();
+          Navigator.of(ctx).pop(true);
+        }
+        if (state is ProductFormError) {
+          ScaffoldMessenger.of(
+            ctx,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Product Form')),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Product Form Page'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<LoginBloc>().add(LogoutRequested());
-                },
-                child: const Text('Logout'),
-              ),
-            ],
+      builder: (ctx, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              widget.product == null ? 'Tạo Sản Phẩm' : 'Cập Nhật Sản Phẩm',
+            ),
           ),
-        ),
-      ),
+          body:
+              state is ProductFormLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Tên sản phẩm',
+                          ),
+                        ),
+                        TextField(
+                          controller: _priceController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Giá sản phẩm',
+                          ),
+                        ),
+                        TextField(
+                          controller: _quantityController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Số lượng sản phẩm',
+                          ),
+                        ),
+                        TextField(
+                          controller: _coverController,
+                          keyboardType: TextInputType.url,
+                          decoration: const InputDecoration(
+                            labelText: 'Link ảnh sản phẩm',
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _onSave,
+                          child: Text(
+                            widget.product == null
+                                ? 'Tạo Sản Phẩm'
+                                : 'Cập Nhật',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+        );
+      },
     );
   }
 }

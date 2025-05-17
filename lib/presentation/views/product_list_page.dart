@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/main.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
+import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
 import 'package:product_management/presentation/views/login_page.dart';
 import 'package:product_management/presentation/views/product_detail_page.dart';
+import 'package:product_management/presentation/views/product_form_page.dart';
 
 /// Widget chỉ chịu trách nhiệm hiển thị danh sách sản phẩm
 /// với load more và pull-to-refresh
@@ -140,7 +142,22 @@ class _ProductListPageState extends State<ProductListPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          final created = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder:
+                  (ctx) => BlocProvider<ProductFormCubit>(
+                    create: (_) => getIt<ProductFormCubit>(),
+                    child: ProductFormPage(),
+                  ),
+            ),
+          );
+          if (created == true) {
+            // chỉ refresh khi thực sự tạo mới/sửa thành công
+            context.read<ProductListCubit>().refresh();
+          }
+        },
+
         child: const Icon(Icons.add),
       ),
     );
@@ -180,11 +197,8 @@ class ProductItem extends StatelessWidget {
                 },
               ),
             )
-            .then((deleted) {
-              if (deleted == true) {
-                // nếu quay về với deleted==true thì refresh lại danh sách
-                context.read<ProductListCubit>().refresh();
-              }
+            .then((_) {
+              context.read<ProductListCubit>().refresh();
             });
       },
     );

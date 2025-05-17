@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:product_management/core/hive/hive_service.dart';
 import 'package:product_management/data/datasources/product_remote.dart';
+import 'package:product_management/data/models/models.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/domain/repositories/product_repository.dart';
 
@@ -66,5 +67,29 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       throw Exception('Failed to delete product: $e');
     }
+  }
+
+  // Thêm sản phẩm
+  @override
+  Future<Product> createProduct(ProductModel product) async {
+    final productModel = await ProductRemote(_dio).createProduct(product);
+    // fire-and-forget cache
+    Future.microtask(
+      () => _hive.getProductBox().put(productModel.id, productModel),
+    );
+    return productModel.toProduct();
+  }
+
+  // Cập nhật sản phẩm
+  @override
+  Future<Product> updateProduct(ProductModel product) async {
+    // 1) Gọi API và chờ network hoàn thành
+    final productModel = await ProductRemote(_dio).updateProduct(product);
+
+    // 2) Ghi cache không await, để chạy nền
+    Future.microtask(() => _hive.getProductBox().put(product.id, productModel));
+
+    // 3) Trả về domain entity ngay
+    return productModel.toProduct();
   }
 }

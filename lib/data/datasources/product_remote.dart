@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:product_management/data/models/product_model.dart';
+import 'package:product_management/domain/entities/product.dart';
 
 class ProductRemote {
   final Dio dio;
@@ -68,5 +69,20 @@ class ProductRemote {
     } catch (e) {
       throw Exception('Unexpected error: $e');
     }
+  }
+
+  // Tạo mới sản phẩm
+  Future<ProductModel> createProduct(ProductModel product) async {
+    final response = await dio.post('/products', data: product.toJson());
+    return ProductModel.fromJson(response.data);
+  }
+
+  // Cập nhật sản phẩm
+  Future<ProductModel> updateProduct(ProductModel product) async {
+    final response = await dio.put(
+      '/products/${product.id}',
+      data: product.toJson(),
+    );
+    return ProductModel.fromJson(response.data);
   }
 }
