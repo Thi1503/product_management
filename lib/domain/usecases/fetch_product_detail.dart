@@ -6,7 +6,13 @@ class FetchProductDetail {
 
   FetchProductDetail(this.productRepository);
 
+  /// Lấy chi tiết sản phẩm từ repository
   Future<Product> call(int productId) {
     return productRepository.fetchProductById(productId);
+  }
+
+  /// Xóa sản phẩm từ repository
+  Future<void> deleteProduct(int productId) {
+    return productRepository.deleteProduct(productId);
   }
 }

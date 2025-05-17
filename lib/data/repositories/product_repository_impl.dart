@@ -52,5 +52,19 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-  /// Lấy chi tiết, ưu tiên cache local
+  /// Xóa sản phẩm, xóa cache
+  @override
+  Future<void> deleteProduct(int id) async {
+    final box = _hive.getProductBox();
+
+    try {
+      // 1) Gọi API xóa sản phẩm
+      await ProductRemote(_dio).deleteProduct(id);
+
+      // 2) Xóa cache
+      await box.delete(id);
+    } catch (e) {
+      throw Exception('Failed to delete product: $e');
+    }
+  }
 }

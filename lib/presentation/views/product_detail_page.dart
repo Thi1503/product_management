@@ -72,7 +72,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             heroTag: 'delete',
             child: const Icon(Icons.delete),
             onPressed: () {
-              /* ... */
+              // Xóa sản phẩm
+              _cubit.deleteProduct(widget.productId);
+              // Hiện thông báo xóa thành công
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Xóa sản phẩm thành công')),
+              );
+              // Quay về trang trước
+              Navigator.of(context).pop();
             },
           ),
         ],

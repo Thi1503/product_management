@@ -53,4 +53,20 @@ class ProductRemote {
       throw Exception('Unexpected error: $e');
     }
   }
+
+  ///Gửi request xóa sản phẩm dựa vào id
+  ///Trả về null
+  Future<void> deleteProduct(int id) async {
+    try {
+      final resp = await dio.delete('/products/$id');
+      if (resp.statusCode != 200) {
+        throw Exception('Failed to delete product: ${resp.data}');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data['message'] ?? e.message;
+      throw Exception('Failed to delete product: $msg');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
 }

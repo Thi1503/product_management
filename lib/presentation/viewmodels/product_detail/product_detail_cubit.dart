@@ -57,4 +57,19 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
         a.quantity == b.quantity &&
         a.cover == b.cover;
   }
+
+  /// Xóa sản phẩm
+  /// Xóa cache
+  /// Nếu xóa thành công thì emit trạng thái xóa thành công
+  /// Nếu xóa thất bại thì emit trạng thái xóa thất bại
+  Future<void> deleteProduct(int id) async {
+    try {
+      await fetchDetail.deleteProduct(id);
+      final box = Hive.box<ProductModel>(HiveService.productCacheBox);
+      await box.delete(id);
+      emit(ProductDetailDeleted('Xóa sản phẩm thành công'));
+    } catch (e) {
+      emit(ProductDetailDeleteError(e.toString()));
+    }
+  }
 }

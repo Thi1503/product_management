@@ -23,3 +23,15 @@ class ProductDetailError extends ProductDetailState {
   final String message;
   ProductDetailError(this.message);
 }
+
+///Trạng thái xóa thành công
+class ProductDetailDeleted extends ProductDetailState {
+  final String message;
+  ProductDetailDeleted(this.message);
+}
+
+///Trạng thái xóa thất bại
+class ProductDetailDeleteError extends ProductDetailState {
+  final String message;
+  ProductDetailDeleteError(this.message);
+}
