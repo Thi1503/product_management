@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:product_management/data/models/product_model.dart';
-import 'package:product_management/domain/entities/product.dart';
 
 class ProductRemote {
   final Dio dio;

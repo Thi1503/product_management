@@ -8,6 +8,7 @@ import 'package:product_management/domain/usecases/fetch_product_detail.dart';
 import 'package:product_management/domain/usecases/update_product.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
+import 'package:product_management/presentation/views/my_app.dart';
 
 import 'core/bloc/bloc_observer.dart';
 import 'core/hive/hive_service.dart';
@@ -18,7 +19,6 @@ import 'domain/usecases/fetch_products.dart';
 import 'domain/usecases/login_usecase.dart';
 import 'presentation/viewmodels/login/login_bloc.dart';
 import 'presentation/viewmodels/product_list/product_list_cubit.dart';
-import 'presentation/views/login_page.dart';
 
 final getIt = GetIt.instance;
 
@@ -80,30 +80,5 @@ Future<void> main() async {
     ),
   );
 
-  runApp(const AppRoot());
-}
-
-class AppRoot extends StatelessWidget {
-  const AppRoot({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<LoginBloc>(),
-      child: const MyApp(),
-    );
-  }
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Product Management',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginPage(),
-    );
-  }
+  runApp(const MyApp());
 }

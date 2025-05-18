@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:product_management/core/utils/utils.dart';
 import 'package:product_management/data/models/product_model.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
@@ -99,7 +98,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
                             decoration: const InputDecoration(
                               labelText: 'Tên sản phẩm',
                             ),
-                            validator: Validators.validateProductName,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Vui lòng nhập tên sản phẩm';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
@@ -108,7 +112,16 @@ class _ProductFormPageState extends State<ProductFormPage> {
                             decoration: const InputDecoration(
                               labelText: 'Giá sản phẩm',
                             ),
-                            validator: Validators.validateProductPrice,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Vui lòng nhập giá';
+                              }
+                              final price = int.tryParse(value);
+                              if (price == null || price < 0) {
+                                return 'Giá không hợp lệ';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
@@ -117,7 +130,16 @@ class _ProductFormPageState extends State<ProductFormPage> {
                             decoration: const InputDecoration(
                               labelText: 'Số lượng sản phẩm',
                             ),
-                            validator: Validators.validateProductQuantity,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Vui lòng nhập số lượng';
+                              }
+                              final qty = int.tryParse(value);
+                              if (qty == null || qty < 0) {
+                                return 'Số lượng không hợp lệ';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
@@ -126,7 +148,16 @@ class _ProductFormPageState extends State<ProductFormPage> {
                             decoration: const InputDecoration(
                               labelText: 'Link ảnh sản phẩm',
                             ),
-                            validator: Validators.validateProductCover,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Vui lòng nhập link ảnh';
+                              }
+                              final uri = Uri.tryParse(value);
+                              if (uri == null || !uri.hasAbsolutePath) {
+                                return 'Link không hợp lệ';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 24),
                           SizedBox(

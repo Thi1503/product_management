@@ -8,7 +8,6 @@ import 'package:product_management/presentation/viewmodels/product_list/product_
 
 import 'package:product_management/presentation/views/product_list_page.dart';
 
-import '../../core/utils/validators.dart';
 import '../viewmodels/login/login_bloc.dart';
 import '../viewmodels/login/login_event.dart';
 import '../viewmodels/login/login_state.dart';
@@ -63,6 +62,14 @@ class _LoginPageState extends State<LoginPage> {
                     ),
               ),
             );
+          } else if (state is LoginFailure) {
+            // Hiển thị SnackBar khi login thất bại
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
           }
         },
         child: Padding(
@@ -77,19 +84,37 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 TextFormField(
                   controller: _taxController,
-                  decoration: const InputDecoration(labelText: 'Tax Code'),
-                  validator: Validators.validateTaxCode,
+                  decoration: const InputDecoration(labelText: 'Mã số thuế'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Mã số thuế không được để trống';
+                    }
+                    return null;
+                  },
                 ),
                 TextFormField(
                   controller: _userController,
-                  decoration: const InputDecoration(labelText: 'Username'),
-                  validator: Validators.validateUserName,
+                  decoration: const InputDecoration(labelText: 'Tài khoản'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Tài khoản không được để trống';
+                    }
+                    return null;
+                  },
                 ),
                 TextFormField(
                   controller: _passController,
-                  decoration: const InputDecoration(labelText: 'Password'),
+                  decoration: const InputDecoration(labelText: 'Mật khẩu'),
                   obscureText: true,
-                  validator: Validators.validatePassword,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Mật khẩu không được để trống';
+                    }
+                    if (value.length < 6 || value.length > 50) {
+                      return 'Mật khẩu phải từ 6 đến 50 ký tự';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
                 BlocBuilder<LoginBloc, LoginState>(

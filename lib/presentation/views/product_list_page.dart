@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/main.dart';
-import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
 import 'package:product_management/presentation/views/login_page.dart';
-import 'package:product_management/presentation/views/product_detail_page.dart';
 import 'package:product_management/presentation/views/product_form_page.dart';
+import 'package:product_management/presentation/widget/product_item.dart';
 
 /// Widget chỉ chịu trách nhiệm hiển thị danh sách sản phẩm
 /// với load more và pull-to-refresh
 class ProductListPage extends StatefulWidget {
-  const ProductListPage({Key? key}) : super(key: key);
+  const ProductListPage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ProductListPageState createState() => _ProductListPageState();
 }
 
@@ -161,55 +160,5 @@ class _ProductListPageState extends State<ProductListPage> {
         child: const Icon(Icons.add),
       ),
     );
-  }
-}
-
-class ProductItem extends StatelessWidget {
-  final Product product;
-
-  const ProductItem({Key? key, required this.product}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: ClipOval(
-        child: Image.network(
-          product.cover,
-          width: 40,
-          height: 40,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.error),
-        ),
-      ),
-
-      title: Text(product.name),
-      subtitle: Text('Giá: ${product.price}'),
-      trailing: Text('SL: ${product.quantity}'),
-      onTap: () {
-        Navigator.of(context)
-            .push<bool>(
-              MaterialPageRoute(
-                builder: (ctx) {
-                  return BlocProvider<ProductDetailCubit>(
-                    create: (_) => getIt<ProductDetailCubit>(),
-                    child: ProductDetailPage(productId: product.id),
-                  );
-                },
-              ),
-            )
-            .then((_) {
-              context.read<ProductListCubit>().refresh();
-            });
-      },
-    );
-  }
-}
-
-class LoadingIndicator extends StatelessWidget {
-  const LoadingIndicator({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: CircularProgressIndicator());
   }
 }
