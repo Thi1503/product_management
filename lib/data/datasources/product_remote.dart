@@ -70,13 +70,13 @@ class ProductRemote {
     }
   }
 
-  // Tạo mới sản phẩm
+  /// Tạo mới sản phẩm
   Future<ProductModel> createProduct(ProductModel product) async {
     final response = await dio.post('/products', data: product.toJson());
     return ProductModel.fromJson(response.data);
   }
 
-  // Cập nhật sản phẩm
+  /// Cập nhật sản phẩm
   Future<ProductModel> updateProduct(ProductModel product) async {
     final response = await dio.put(
       '/products/${product.id}',

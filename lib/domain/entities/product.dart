@@ -1,3 +1,4 @@
+/// This class represents a product entity with its properties.
 class Product {
   final int id;
   final String name;

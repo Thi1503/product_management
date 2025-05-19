@@ -6,6 +6,8 @@ import 'package:product_management/presentation/viewmodels/product_detail/produc
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/views/product_detail_page.dart';
 
+/// Widget hiển thị thông tin sản phẩm
+/// Sử dụng ListTile để hiển thị thông tin sản phẩm
 class ProductItem extends StatelessWidget {
   final Product product;
 

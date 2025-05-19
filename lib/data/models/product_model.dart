@@ -2,6 +2,8 @@
 
 import 'package:product_management/domain/entities/product.dart';
 
+/// Mô hình dữ liệu cho sản phẩm
+/// Chuyển đổi giữa JSON và ProductModel
 class ProductModel {
   final int id;
 

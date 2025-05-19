@@ -1,6 +1,8 @@
 import 'package:hive/hive.dart';
 import 'package:product_management/data/models/product_model.dart';
 
+/// Adapter cho ProductModel
+/// Được sử dụng để lưu trữ và đọc dữ liệu từ Hive
 class ProductModelAdapter extends TypeAdapter<ProductModel> {
   @override
   final int typeId = 0;

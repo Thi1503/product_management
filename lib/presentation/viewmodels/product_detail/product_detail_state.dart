@@ -1,5 +1,6 @@
 import 'package:product_management/domain/entities/product.dart';
 
+/// Trạng thái của ProductDetail
 abstract class ProductDetailState {}
 
 /// Các trạng thái của ProductDetail

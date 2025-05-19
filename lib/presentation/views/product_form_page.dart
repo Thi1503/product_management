@@ -4,6 +4,9 @@ import 'package:product_management/data/models/product_model.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
 
+/// Trang để tạo hoặc cập nhật sản phẩm
+/// Nếu có sản phẩm được truyền vào, trang sẽ hiển thị thông tin của sản phẩm đó
+/// Ngược lại, trang sẽ hiển thị một form trống để người dùng nhập thông tin sản phẩm mới
 class ProductFormPage extends StatefulWidget {
   final Product? product;
   const ProductFormPage({Key? key, this.product}) : super(key: key);

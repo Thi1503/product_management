@@ -5,6 +5,8 @@ import 'package:product_management/data/models/models.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/domain/repositories/product_repository.dart';
 
+/// Triển khai ProductRepository
+/// Sử dụng Dio để gọi API và Hive để cache dữ liệu
 class ProductRepositoryImpl implements ProductRepository {
   final Dio _dio;
   final HiveService _hive;

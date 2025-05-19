@@ -6,11 +6,16 @@ import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/domain/usecases/fetch_product_detail.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_state.dart';
 
+/// Cubit để quản lý trạng thái của ProductDetail
 class ProductDetailCubit extends Cubit<ProductDetailState> {
   final FetchProductDetail fetchDetail;
   ProductDetailCubit({required this.fetchDetail})
     : super(ProductDetailInitial());
 
+  /// Hàm này sẽ được gọi khi cần tải chi tiết sản phẩm
+  /// Hàm này sẽ kiểm tra xem sản phẩm đã được lưu trong cache hay chưa
+  /// Nếu có thì sẽ lấy sản phẩm từ cache
+  /// Nếu không có thì sẽ gọi API để lấy sản phẩm
   Future<void> loadDetail(int id) async {
     final box = Hive.box<ProductModel>(HiveService.productCacheBox);
 

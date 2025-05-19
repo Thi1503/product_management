@@ -12,9 +12,8 @@ class DioClient {
     : dio = Dio(
         BaseOptions(
           baseUrl: Constants.apiBaseUrl,
-          connectTimeout: const Duration(seconds: 5),
-          sendTimeout: const Duration(seconds: 60),
-          receiveTimeout: const Duration(seconds: 120),
+          connectTimeout: const Duration(seconds: 120),
+          sendTimeout: const Duration(seconds: 5),
         ),
       ) {
     // 1) Thêm LogInterceptor để log toàn bộ request/response

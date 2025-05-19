@@ -7,6 +7,7 @@ import 'package:product_management/presentation/viewmodels/product_detail/produc
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
 import 'package:product_management/presentation/views/product_form_page.dart';
 
+///  Màn hình Chi tiết sản phẩm
 class ProductDetailPage extends StatefulWidget {
   final int productId;
   const ProductDetailPage({super.key, required this.productId});
