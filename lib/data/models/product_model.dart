@@ -1,0 +1,54 @@
+// lib/data/models/product_model.dart
+
+import 'package:product_management/domain/entities/product.dart';
+
+class ProductModel {
+  final int id;
+
+  final String name;
+
+  final double price;
+
+  final int quantity;
+
+  final String cover;
+
+  ProductModel({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.quantity,
+    required this.cover,
+  });
+
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final data = (json['data'] as Map<String, dynamic>?) ?? json;
+    int parseInt(dynamic v) =>
+        v is num ? v.toInt() : int.tryParse(v?.toString() ?? '') ?? 0;
+    double parseDouble(dynamic v) =>
+        v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '') ?? 0.0;
+    return ProductModel(
+      id: parseInt(data['id']),
+      name: data['name'] as String? ?? '',
+      price: parseDouble(data['price']),
+      quantity: parseInt(data['quantity']),
+      cover: data['cover'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'price': price,
+    'quantity': quantity,
+    'cover': cover,
+  };
+
+  Product toProduct() => Product(
+    id: id,
+    name: name,
+    price: price,
+    quantity: quantity,
+    cover: cover,
+  );
+}
