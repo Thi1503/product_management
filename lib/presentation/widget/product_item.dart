@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:product_management/core/di/di.dart';
 import 'package:product_management/domain/entities/product.dart';
-import 'package:product_management/presentation/viewmodels/product_detail/product_detail_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/views/product_detail_page.dart';
 

@@ -1,53 +1,61 @@
 import 'package:bloc/bloc.dart';
+import 'package:product_management/domain/entities/product.dart';
 
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
 import '../../../domain/usecases/fetch_products_use_case.dart';
 
 /// Cubit quản lý danh sách sản phẩm
 class ProductListCubit extends Cubit<ProductListState> {
-  final FetchProductsUseCase fetchProducts;
-  int _currentPage = 1;
-  final int _pageSize = 20;
+  final FetchProductsUseCase fetchProducts; // Use case để lấy danh sách sản phẩm
+  int _currentPage = 1; // Trang hiện tại
+  final int _pageSize = 15; // Số lượng sản phẩm mỗi trang
+  bool _hasMore = true; // Cờ kiểm tra còn dữ liệu để load tiếp không
+  List<Product> products = []; // Danh sách sản phẩm hiện tại
 
   ProductListCubit({required this.fetchProducts}) : super(ProductListInitial());
 
-  /// Load lần đầu
+  /// Load lần đầu hoặc refresh lại danh sách sản phẩm
   Future<void> loadInitial() async {
-    emit(ProductListLoading());
+    emit(ProductListLoading()); // Phát trạng thái loading
+    _currentPage = 1;
+    _hasMore = true;
     try {
-      final list = await fetchProducts(_currentPage, _pageSize);
-      emit(ProductListLoaded(products: list, hasMore: list.isNotEmpty));
+      print('LoadInitial: page=$_currentPage');
+      final List<Product> list = await fetchProducts(_currentPage, _pageSize); // Lấy dữ liệu từ use case
+      print('LoadInitial: fetched ${list.length} items');
+      products = List.from(list); // Gán lại danh sách sản phẩm
+      _hasMore = list.length == _pageSize; // Kiểm tra còn dữ liệu không
+      emit(ProductListLoaded(products: products, hasMore: _hasMore)); // Phát trạng thái loaded
     } catch (e) {
-      emit(ProductListError(e.toString()));
+      emit(ProductListError(e.toString())); // Phát trạng thái lỗi
     }
   }
 
-  /// Load thêm
-  /// Tăng trang hiện tại lên 1
+  /// Load thêm dữ liệu khi scroll tới cuối danh sách
   Future<void> loadMore() async {
-    // Chỉ loadMore khi đã có dữ liệu và vẫn còn trang
-    if (state is ProductListLoaded) {
-      final current = state as ProductListLoaded;
-      if (!current.hasMore) return;
-
-      // Emit state loadingMore với danh sách cũ
-      emit(ProductListLoadingMore(current.products));
-
+    if (!_hasMore) return; // Nếu không còn dữ liệu thì không load nữa
+    if (state is ProductListLoaded || state is ProductListLoadingMore) {
+      emit(ProductListLoadingMore(products)); // Phát trạng thái loading more
       try {
-        _currentPage++;
-        final newItems = await fetchProducts(_currentPage, _pageSize);
-        final all = [...current.products, ...newItems];
-        emit(ProductListLoaded(products: all, hasMore: newItems.isNotEmpty));
+        _currentPage++; // Tăng trang
+        print('LoadMore: page=$_currentPage');
+        final List<Product> newItems = await fetchProducts(
+          _currentPage,
+          _pageSize,
+        ); // Lấy thêm dữ liệu
+        print('LoadMore: fetched ${newItems.length} items');
+        products.addAll(newItems); // Thêm vào danh sách hiện tại
+        _hasMore = newItems.length == _pageSize; // Kiểm tra còn dữ liệu không
+        emit(ProductListLoaded(products: products, hasMore: _hasMore)); // Phát trạng thái loaded
       } catch (e) {
-        _currentPage--; // rollback page nếu lỗi
-        emit(ProductListError(e.toString()));
+        _currentPage--; // Nếu lỗi thì giảm lại trang
+        emit(ProductListError(e.toString())); // Phát trạng thái lỗi
       }
     }
   }
 
-  /// Refresh data
+  /// Refresh lại danh sách sản phẩm
   Future<void> refresh() async {
-    _currentPage = 1;
     await loadInitial();
   }
 }

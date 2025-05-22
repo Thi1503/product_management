@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:product_management/core/di/di.dart';
-import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
+import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
 import 'package:product_management/presentation/views/login_page.dart';
@@ -19,35 +18,53 @@ class ProductListPage extends StatefulWidget {
 }
 
 class _ProductListPageState extends State<ProductListPage> {
-  final _scrollController = ScrollController();
-  bool _isLoadingMore = false;
+  // Controller cho pull-to-refresh và load more
+  final RefreshController _refreshController = RefreshController();
 
   @override
   void initState() {
     super.initState();
+    // Lấy cubit và load dữ liệu ban đầu khi vào trang
     final cubit = context.read<ProductListCubit>();
     cubit.loadInitial();
-    _scrollController.addListener(_onScroll);
   }
 
-  /// Hàm lắng nghe scroll
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currScroll = _scrollController.position.pixels;
+  @override
+  void dispose() {
+    // Giải phóng controller khi widget bị huỷ
+    _refreshController.dispose();
+    super.dispose();
+  }
 
-    // khi đã ở đáy (và không phải tại top), trigger loadMore
-    if (currScroll >= maxScroll && !_isLoadingMore) {
-      final cubit = context.read<ProductListCubit>();
-      final state = cubit.state;
-      if (state is ProductListLoaded && state.hasMore) {
-        _isLoadingMore = true;
-        cubit.loadMore().whenComplete(() => _isLoadingMore = false);
-      }
+  // Hàm xử lý khi người dùng kéo để refresh
+  void _onRefresh() async {
+    await context.read<ProductListCubit>().refresh();
+    _refreshController.refreshCompleted();
+    _refreshController.resetNoData(); // Reset lại trạng thái load no data
+  }
+
+  // Hàm xử lý khi người dùng kéo để load thêm dữ liệu
+  void _onLoading() async {
+    final cubit = context.read<ProductListCubit>();
+    final prevLength = cubit.products.length;
+    await cubit.loadMore();
+    final loaded =
+        cubit.state is ProductListLoaded
+            ? cubit.state as ProductListLoaded
+            : null;
+    // Nếu không còn dữ liệu để load thì báo cho controller
+    if (loaded != null && !loaded.hasMore) {
+      _refreshController.loadNoData();
+    } else if (cubit.products.length > prevLength) {
+      // Nếu có dữ liệu mới thì báo load complete
+      _refreshController.loadComplete();
+    } else {
+      // Nếu không có dữ liệu mới nhưng chưa hết thì vẫn báo complete
+      _refreshController.loadComplete();
     }
   }
 
-  /// Xác nhận đăng xuất
+  /// Hiển thị dialog xác nhận đăng xuất
   void _confirmLogout() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
@@ -67,6 +84,7 @@ class _ProductListPageState extends State<ProductListPage> {
             ],
           ),
     );
+    // Nếu xác nhận thì chuyển về trang đăng nhập và xoá hết các route trước đó
     if (shouldLogout == true) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -75,88 +93,84 @@ class _ProductListPageState extends State<ProductListPage> {
     }
   }
 
-  /// Hủy scroll controller
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Danh sách Sản phẩm'),
         actions: [
+          // Nút đăng xuất
           IconButton(icon: const Icon(Icons.logout), onPressed: _confirmLogout),
         ],
       ),
-
-      body: RefreshIndicator(
-        onRefresh: () => context.read<ProductListCubit>().refresh(),
-        child: BlocBuilder<ProductListCubit, ProductListState>(
-          builder: (context, state) {
-            // 1. Initial / Loading đầu
-            if (state is ProductListInitial || state is ProductListLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            // 2. Loaded (có thể kèm spinner cuối để loadMore)
-            if (state is ProductListLoaded) {
-              return NotificationListener<ScrollNotification>(
-                onNotification: (notif) {
-                  if (notif.metrics.pixels >= notif.metrics.maxScrollExtent &&
-                      !_isLoadingMore) {
-                    _isLoadingMore = true;
-                    context.read<ProductListCubit>().loadMore().whenComplete(
-                      () => _isLoadingMore = false,
-                    );
-                  }
-                  return false;
-                },
-                child: ListView.builder(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: state.products.length + (state.hasMore ? 1 : 0),
-                  itemBuilder: (ctx, i) {
-                    if (i < state.products.length) {
-                      return ProductItem(product: state.products[i]);
-                    }
+      body: BlocBuilder<ProductListCubit, ProductListState>(
+        builder: (context, state) {
+          // Hiển thị loading khi đang load dữ liệu ban đầu
+          if (state is ProductListInitial || state is ProductListLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          // Hiển thị loading indicator khi đang load thêm dữ liệu
+          if (state is ProductListLoadingMore) {
+            return SmartRefresher(
+              controller: _refreshController,
+              enablePullDown: true,
+              enablePullUp: true,
+              onRefresh: _onRefresh,
+              onLoading: _onLoading,
+              child: ListView.builder(
+                key: const PageStorageKey('productList'),
+                itemCount:
+                    context.read<ProductListCubit>().products.length +
+                    1, // +1 cho loading indicator
+                itemBuilder: (ctx, i) {
+                  final products = context.read<ProductListCubit>().products;
+                  if (i < products.length) {
+                    // Hiển thị từng sản phẩm
+                    return ProductItem(product: products[i]);
+                  } else {
+                    // Hiển thị loading indicator ở cuối danh sách
                     return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.all(16.0),
                       child: Center(child: CircularProgressIndicator()),
                     );
-                  },
-                ),
-              );
-            }
-
-            // 3. Error
-            if (state is ProductListError) {
-              return Center(child: Text('Lỗi: ${state.message}'));
-            }
-
-            return const SizedBox.shrink();
-          },
-        ),
+                  }
+                },
+              ),
+            );
+          }
+          // Hiển thị danh sách sản phẩm khi đã load xong
+          if (state is ProductListLoaded) {
+            final products = context.read<ProductListCubit>().products;
+            return SmartRefresher(
+              controller: _refreshController,
+              enablePullDown: true,
+              enablePullUp: true,
+              onRefresh: _onRefresh,
+              onLoading: _onLoading,
+              child: ListView.builder(
+                key: const PageStorageKey('productList'),
+                itemCount: products.length,
+                itemBuilder: (ctx, i) {
+                  return ProductItem(product: products[i]);
+                },
+              ),
+            );
+          }
+          // Trường hợp không có dữ liệu hoặc lỗi
+          return const Center(child: Text('Không có sản phẩm nào.'));
+        },
       ),
       floatingActionButton: FloatingActionButton(
+        // Nút thêm sản phẩm mới
         onPressed: () async {
-          final created = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder:
-                  (ctx) => BlocProvider<ProductFormCubit>(
-                    create: (_) => getIt<ProductFormCubit>(),
-                    child: ProductFormPage(),
-                  ),
-            ),
-          );
+          final created = await Navigator.of(
+            context,
+          ).push<bool>(MaterialPageRoute(builder: (ctx) => ProductFormPage()));
+          // Nếu thêm thành công thì refresh lại danh sách
           if (created == true) {
-            // chỉ refresh khi thực sự tạo mới/sửa thành công
             context.read<ProductListCubit>().refresh();
           }
         },
-
         child: const Icon(Icons.add),
       ),
     );

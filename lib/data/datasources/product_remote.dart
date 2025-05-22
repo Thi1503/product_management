@@ -16,7 +16,13 @@ class ProductRemote {
   /// Trả về danh sách ProductModel
   Future<List<ProductModel>> fetchProducts(int page, int size) async {
     try {
-      final resp = await dio.get('/products');
+      final resp = await dio.get(
+        '/products',
+        queryParameters: {
+          'page': page,
+          'size': size,
+        },
+      );
       final baseResp = BaseResponseList<ProductModel>.fromJson(
         resp.data,
         (e) => ProductModel.fromJson(e as Map<String, dynamic>),
