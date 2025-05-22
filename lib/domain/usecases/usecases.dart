@@ -1,5 +1,5 @@
-export 'login_usecase.dart';
-export 'fetch_products.dart';
-export 'fetch_product_detail.dart';
-export 'update_product.dart';
-export 'create_product.dart';
+export 'login_use_case.dart';
+export 'fetch_products_use_case.dart';
+export 'fetch_product_detail_use_case.dart';
+export 'update_product_use_case.dart';
+export 'create_product_use_case.dart';

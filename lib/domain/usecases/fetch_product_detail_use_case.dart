@@ -3,10 +3,10 @@ import 'package:product_management/domain/repositories/product_repository.dart';
 
 /// Use case để lấy chi tiết sản phẩm
 /// Sử dụng ProductRepository để thực hiện việc này
-class FetchProductDetail {
+class FetchProductDetailUseCase {
   final ProductRepository productRepository;
 
-  FetchProductDetail(this.productRepository);
+  FetchProductDetailUseCase(this.productRepository);
 
   /// Lấy chi tiết sản phẩm từ repository
   Future<Product> call(int productId) {

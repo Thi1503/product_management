@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:product_management/core/constants.dart';
+import 'package:product_management/core/di/di.dart';
 import 'package:product_management/core/hive/hive_service.dart';
-import 'package:product_management/main.dart';
 import 'package:product_management/presentation/viewmodels/product_list/product_list_cubit.dart';
 
 import 'package:product_management/presentation/views/product_list_page.dart';
@@ -39,7 +39,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _taxController.dispose();
     _userController.dispose();

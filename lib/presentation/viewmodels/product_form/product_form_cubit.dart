@@ -2,18 +2,18 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:product_management/data/models/models.dart';
 import '../../../domain/entities/product.dart';
-import '../../../domain/usecases/create_product.dart';
-import '../../../domain/usecases/update_product.dart';
+import '../../../domain/usecases/create_product_use_case.dart';
+import '../../../domain/usecases/update_product_use_case.dart';
 
 part 'product_form_state.dart';
 
 class ProductFormCubit extends Cubit<ProductFormState> {
-  final CreateProduct _createProductUseCase;
-  final UpdateProduct _updateProductUseCase;
+  final CreateProductUseCase _createProductUseCase;
+  final UpdateProductUseCase _updateProductUseCase;
 
   ProductFormCubit({
-    required CreateProduct createProductUseCase,
-    required UpdateProduct updateProductUseCase,
+    required CreateProductUseCase createProductUseCase,
+    required UpdateProductUseCase updateProductUseCase,
   }) : _createProductUseCase = createProductUseCase,
        _updateProductUseCase = updateProductUseCase,
        super(ProductFormInitial());

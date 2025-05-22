@@ -3,12 +3,12 @@ import 'package:hive/hive.dart';
 import 'package:product_management/core/hive/hive_service.dart';
 import 'package:product_management/data/models/product_model.dart';
 import 'package:product_management/domain/entities/product.dart';
-import 'package:product_management/domain/usecases/fetch_product_detail.dart';
+import 'package:product_management/domain/usecases/fetch_product_detail_use_case.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_state.dart';
 
 /// Cubit để quản lý trạng thái của ProductDetail
 class ProductDetailCubit extends Cubit<ProductDetailState> {
-  final FetchProductDetail fetchDetail;
+  final FetchProductDetailUseCase fetchDetail;
   ProductDetailCubit({required this.fetchDetail})
     : super(ProductDetailInitial());
 

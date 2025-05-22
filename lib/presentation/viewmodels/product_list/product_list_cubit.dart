@@ -1,11 +1,11 @@
 import 'package:bloc/bloc.dart';
 
 import 'package:product_management/presentation/viewmodels/product_list/product_list_state.dart';
-import '../../../domain/usecases/fetch_products.dart';
+import '../../../domain/usecases/fetch_products_use_case.dart';
 
 /// Cubit quản lý danh sách sản phẩm
 class ProductListCubit extends Cubit<ProductListState> {
-  final FetchProducts fetchProducts;
+  final FetchProductsUseCase fetchProducts;
   int _currentPage = 1;
   final int _pageSize = 20;
 
