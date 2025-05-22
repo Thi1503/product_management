@@ -25,27 +25,28 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    final data = (json['data'] as Map<String, dynamic>?) ?? json;
-    int parseInt(dynamic v) =>
-        v is num ? v.toInt() : int.tryParse(v?.toString() ?? '') ?? 0;
     return ProductModel(
-      id: parseInt(data['id']),
-      name: data['name'] as String? ?? '',
-      price: parseInt(data['price']),
-      quantity: parseInt(data['quantity']),
-      cover: data['cover'] as String? ?? '',
+      id: json['id'] as int,
+      name: json['name'] as String,
+      price: json['price'] as int,
+      quantity: json['quantity'] as int,
+      cover: json['cover'] as String,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {'name': name, 'price': price, 'quantity': quantity, 'cover': cover};
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'price': price,
+        'quantity': quantity,
+        'cover': cover,
+      };
 
   Product toProduct() => Product(
-    id: id,
-    name: name,
-    price: price,
-    quantity: quantity,
-    cover: cover,
-  );
+        id: id,
+        name: name,
+        price: price,
+        quantity: quantity,
+        cover: cover,
+      );
 }

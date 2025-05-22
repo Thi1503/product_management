@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:product_management/data/models/base_response.dart';
 import '../models/user_model.dart';
 
 /// Data source gọi API liên quan tới Authentication
@@ -24,9 +25,13 @@ class AuthRemote {
       },
     );
     final json = resp.data;
-    if (json == null || json['data'] == null) {
+    if (json == null) {
       throw Exception('Invalid response format');
     }
-    return UserModel.fromJson(json['data'] as Map<String, dynamic>);
+    final baseResp = BaseResponse<UserModel>.fromJson(
+      json,
+      (data) => UserModel.fromJson(data as Map<String, dynamic>),
+    );
+    return baseResp.data;
   }
 }

@@ -73,7 +73,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             children: [
               FloatingActionButton(
                 heroTag: 'edit',
-                child: const Icon(Icons.edit),
                 onPressed:
                     state is ProductDetailLoaded
                         ? () async {
@@ -100,6 +99,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           }
                         }
                         : null,
+                child: const Icon(Icons.edit),
               ),
               const SizedBox(height: 8),
 

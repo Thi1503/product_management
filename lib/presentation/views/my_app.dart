@@ -5,7 +5,7 @@ import 'package:product_management/presentation/viewmodels/login/login_bloc.dart
 import 'package:product_management/presentation/views/login_page.dart';
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
