@@ -1,18 +1,19 @@
-// lib/data/models/product_model.dart
-
+import 'package:hive/hive.dart';
 import 'package:product_management/domain/entities/product.dart';
 
-/// Mô hình dữ liệu cho sản phẩm
-/// Chuyển đổi giữa JSON và ProductModel
+part 'product_model.g.dart';
+
+@HiveType(typeId: 1)
 class ProductModel {
+  @HiveField(0)
   final int id;
-
+  @HiveField(1)
   final String name;
-
+  @HiveField(2)
   final int price;
-
+  @HiveField(3)
   final int quantity;
-
+  @HiveField(4)
   final String cover;
 
   ProductModel({
