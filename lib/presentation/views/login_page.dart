@@ -14,7 +14,7 @@ import '../viewmodels/login/login_state.dart';
 
 /// Widget màn Login
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -29,7 +29,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     final box = GetIt.I<HiveService>().getAuthBox();
     // Tiền điền nếu có
@@ -47,98 +46,100 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Đăng nhập')),
-      body: BlocListener<LoginBloc, LoginState>(
-        listener: (context, state) {
-          if (state is LoginSuccess) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder:
-                    (_) => BlocProvider<ProductListCubit>(
-                      create: (_) => getIt<ProductListCubit>(),
-                      child: ProductListPage(),
-                    ),
+    return BlocProvider<LoginBloc>(
+      create: (_) => getIt<LoginBloc>(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Đăng nhập')),
+        body: BlocListener<LoginBloc, LoginState>(
+          listener: (context, state) {
+            if (state is LoginSuccess) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider<ProductListCubit>(
+                    create: (_) => getIt<ProductListCubit>(),
+                    child: const ProductListPage(),
+                  ),
+                ),
+              );
+            } else if (state is LoginFailure) {
+              // Hiển thị SnackBar khi login thất bại
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              autovalidateMode:
+                  _autovalidate
+                      ? AutovalidateMode.always
+                      : AutovalidateMode.disabled,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _taxController,
+                    decoration: const InputDecoration(labelText: 'Mã số thuế'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Mã số thuế không được để trống';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _userController,
+                    decoration: const InputDecoration(labelText: 'Tài khoản'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tài khoản không được để trống';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _passController,
+                    decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Mật khẩu không được để trống';
+                      }
+                      if (value.length < 6 || value.length > 50) {
+                        return 'Mật khẩu phải từ 6 đến 50 ký tự';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  BlocBuilder<LoginBloc, LoginState>(
+                    builder: (context, state) {
+                      if (state is LoginLoading) {
+                        return const CircularProgressIndicator();
+                      }
+                      return ElevatedButton(
+                        onPressed: () {
+                          setState(() => _autovalidate = true);
+                          if (_formKey.currentState!.validate()) {
+                            context.read<LoginBloc>().add(
+                              LoginSubmitted(
+                                taxCode: _taxController.text,
+                                username: _userController.text,
+                                password: _passController.text,
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Đăng nhập'),
+                      );
+                    },
+                  ),
+                ],
               ),
-            );
-          } else if (state is LoginFailure) {
-            // Hiển thị SnackBar khi login thất bại
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.redAccent,
-              ),
-            );
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            autovalidateMode:
-                _autovalidate
-                    ? AutovalidateMode.always
-                    : AutovalidateMode.disabled,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _taxController,
-                  decoration: const InputDecoration(labelText: 'Mã số thuế'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Mã số thuế không được để trống';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _userController,
-                  decoration: const InputDecoration(labelText: 'Tài khoản'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Tài khoản không được để trống';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _passController,
-                  decoration: const InputDecoration(labelText: 'Mật khẩu'),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Mật khẩu không được để trống';
-                    }
-                    if (value.length < 6 || value.length > 50) {
-                      return 'Mật khẩu phải từ 6 đến 50 ký tự';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                BlocBuilder<LoginBloc, LoginState>(
-                  builder: (context, state) {
-                    if (state is LoginLoading) {
-                      return const CircularProgressIndicator();
-                    }
-                    return ElevatedButton(
-                      onPressed: () {
-                        setState(() => _autovalidate = true);
-                        if (_formKey.currentState!.validate()) {
-                          context.read<LoginBloc>().add(
-                            LoginSubmitted(
-                              taxCode: _taxController.text,
-                              username: _userController.text,
-                              password: _passController.text,
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text('Đăng nhập'),
-                    );
-                  },
-                ),
-              ],
             ),
           ),
         ),

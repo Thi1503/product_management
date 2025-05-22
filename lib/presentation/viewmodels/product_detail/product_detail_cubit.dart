@@ -32,8 +32,7 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
       print('Cached product: ${cached?.toProduct()}');
       print('Fetched product: $product');
       // So sánh product mới với cached (dữ liệu cũ)
-      bool isDifferent =
-          cached == null || !_isProductEqual(product, cached.toProduct());
+      bool isDifferent = cached == null || product != cached.toProduct();
 
       if (isDifferent) {
         final model = ProductModel(
@@ -54,15 +53,6 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
     }
   }
 
-  /// Hàm so sánh 2 product domain có giống nhau không
-  bool _isProductEqual(Product a, Product b) {
-    return a.id == b.id &&
-        a.name == b.name &&
-        a.price == b.price &&
-        a.quantity == b.quantity &&
-        a.cover == b.cover;
-  }
-
   /// Xóa sản phẩm
   /// Xóa cache
   /// Nếu xóa thành công thì emit trạng thái xóa thành công
@@ -76,5 +66,9 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
     } catch (e) {
       emit(ProductDetailDeleteError(e.toString()));
     }
+  }
+
+  void updateProduct(Product product) {
+    emit(ProductDetailLoaded(product));
   }
 }

@@ -33,12 +33,7 @@ class ProductItem extends StatelessWidget {
         Navigator.of(context)
             .push<bool>(
               MaterialPageRoute(
-                builder: (ctx) {
-                  return BlocProvider<ProductDetailCubit>(
-                    create: (_) => getIt<ProductDetailCubit>(),
-                    child: ProductDetailPage(productId: product.id),
-                  );
-                },
+                builder: (_) => ProductDetailPage(productId: product.id),
               ),
             )
             .then((_) {
