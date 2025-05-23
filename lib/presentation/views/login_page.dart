@@ -55,10 +55,11 @@ class _LoginPageState extends State<LoginPage> {
             if (state is LoginSuccess) {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (_) => BlocProvider<ProductListCubit>(
-                    create: (_) => getIt<ProductListCubit>(),
-                    child: const ProductListPage(),
-                  ),
+                  builder:
+                      (_) => BlocProvider<ProductListCubit>(
+                        create: (_) => getIt<ProductListCubit>(),
+                        child: const ProductListPage(),
+                      ),
                 ),
               );
             } else if (state is LoginFailure) {
@@ -124,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                       return ElevatedButton(
                         onPressed: () {
                           setState(() => _autovalidate = true);
-                          if (_formKey.currentState!.validate()) {
+                          if (_formKey.currentState?.validate() ?? false) {
                             context.read<LoginBloc>().add(
                               LoginSubmitted(
                                 taxCode: _taxController.text,

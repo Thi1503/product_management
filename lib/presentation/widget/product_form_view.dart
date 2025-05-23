@@ -43,7 +43,7 @@ class _ProductFormViewState extends State<ProductFormView> {
   }
 
   void _onSave() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState?.validate() ?? false) {
       final newProduct = ProductModel(
         id: widget.product?.id ?? 0,
         name: _nameController.text.trim(),
