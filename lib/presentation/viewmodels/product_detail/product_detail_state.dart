@@ -1,38 +1,55 @@
+import 'package:equatable/equatable.dart';
 import 'package:product_management/domain/entities/product.dart';
 
-/// Trạng thái của ProductDetail
-abstract class ProductDetailState {}
+/// Single Class State cho ProductDetail
+/// Gom tất cả trạng thái (loading, loaded, error, deleted, delete error) vào một class duy nhất.
+/// Giúp giữ lại dữ liệu cũ khi chuyển trạng thái và đơn giản hóa quản lý UI.
+class ProductDetailState extends Equatable {
+  /// Thông tin sản phẩm (nếu đã tải thành công)
+  final Product? product;
 
-/// Các trạng thái của ProductDetail
+  /// Đang tải dữ liệu hay không
+  final bool isLoading;
 
-///Trạng thái khởi tạo
-class ProductDetailInitial extends ProductDetailState {}
+  /// Thông báo lỗi (nếu có)
+  final String? errorMessage;
 
-///Trạng thái đang tải
-class ProductDetailLoading extends ProductDetailState {}
+  /// Đã xóa thành công hay chưa
+  final bool isDeleted;
 
-///Trạng thái tải thành công
-class ProductDetailLoaded extends ProductDetailState {
-  final Product product;
-  ProductDetailLoaded(this.product);
-}
+  /// Thông báo khi xóa (thành công hoặc thất bại)
+  final String? deleteMessage;
 
-///Trạng thái tải thất bại
-///Trạng thái này sẽ được sử dụng khi có lỗi xảy ra trong quá trình tải dữ liệu
-///Ví dụ như không tìm thấy sản phẩm, lỗi mạng, lỗi server...
-class ProductDetailError extends ProductDetailState {
-  final String message;
-  ProductDetailError(this.message);
-}
+  const ProductDetailState({
+    this.product,
+    this.isLoading = false,
+    this.errorMessage,
+    this.isDeleted = false,
+    this.deleteMessage,
+  });
 
-///Trạng thái xóa thành công
-class ProductDetailDeleted extends ProductDetailState {
-  final String message;
-  ProductDetailDeleted(this.message);
-}
+  /// Trạng thái khởi tạo ban đầu
+  factory ProductDetailState.initial() {
+    return const ProductDetailState();
+  }
 
-///Trạng thái xóa thất bại
-class ProductDetailDeleteError extends ProductDetailState {
-  final String message;
-  ProductDetailDeleteError(this.message);
+  /// Tạo một bản sao mới với các giá trị cập nhật
+  ProductDetailState copyWith({
+    Product? product,
+    bool? isLoading,
+    String? errorMessage,
+    bool? isDeleted,
+    String? deleteMessage,
+  }) {
+    return ProductDetailState(
+      product: product ?? this.product,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deleteMessage: deleteMessage,
+    );
+  }
+
+  @override
+  List<Object?> get props => [product, isLoading, errorMessage, isDeleted, deleteMessage];
 }

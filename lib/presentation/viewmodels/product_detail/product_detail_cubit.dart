@@ -6,34 +6,37 @@ import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/domain/usecases/fetch_product_detail_use_case.dart';
 import 'package:product_management/presentation/viewmodels/product_detail/product_detail_state.dart';
 
-/// Cubit để quản lý trạng thái của ProductDetail
+/// Cubit quản lý trạng thái chi tiết sản phẩm theo Single Class State.
+/// Tất cả các trạng thái (đang tải, đã tải, lỗi, đã xóa, lỗi khi xóa) đều được quản lý trong 1 state duy nhất.
 class ProductDetailCubit extends Cubit<ProductDetailState> {
   final FetchProductDetailUseCase fetchDetail;
-  ProductDetailCubit({required this.fetchDetail})
-    : super(ProductDetailInitial());
 
-  /// Hàm này sẽ được gọi khi cần tải chi tiết sản phẩm
-  /// Hàm này sẽ kiểm tra xem sản phẩm đã được lưu trong cache hay chưa
-  /// Nếu có thì sẽ lấy sản phẩm từ cache
-  /// Nếu không có thì sẽ gọi API để lấy sản phẩm
+  ProductDetailCubit({required this.fetchDetail})
+      : super(ProductDetailState.initial());
+
+  /// Tải chi tiết sản phẩm theo id.
+  /// Nếu có dữ liệu trong cache, cập nhật state ngay lập tức.
+  /// Sau đó gọi API để cập nhật mới nếu có thay đổi.
   Future<void> loadDetail(int id) async {
     final box = Hive.box<ProductModel>(HiveService.productCacheBox);
-
     final cached = box.get(id);
+    
     if (cached != null) {
-      emit(ProductDetailLoaded(cached.toProduct()));
+      // Nếu có cache, cập nhật state với dữ liệu đã có và tắt loading.
+      emit(state.copyWith(product: cached.toProduct(), isLoading: false));
     } else {
-      emit(ProductDetailLoading());
+      // Nếu chưa có cache, cập nhật state đang tải và xóa lỗi cũ.
+      emit(state.copyWith(isLoading: true, errorMessage: null));
     }
-
+    
     try {
       final product = await fetchDetail(id);
-      // In debug hai đối tượng để so sánh
+      // In debug để so sánh dữ liệu cached và dữ liệu mới lấy được.
       print('Cached product: ${cached?.toProduct()}');
       print('Fetched product: $product');
-      // So sánh product mới với cached (dữ liệu cũ)
-      bool isDifferent = cached == null || product != cached.toProduct();
 
+      // Nếu sản phẩm mới khác với cache (hoặc không có cache), cập nhật cache và state.
+      bool isDifferent = cached == null || product != cached.toProduct();
       if (isDifferent) {
         final model = ProductModel(
           id: product.id,
@@ -43,32 +46,34 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
           cover: product.cover,
         );
         await box.put(id, model);
-        emit(ProductDetailLoaded(product));
+        emit(state.copyWith(product: product, isLoading: false, errorMessage: null));
       }
-      // Nếu giống nhau thì không emit lại
+      // Nếu không có sự khác nhau, giữ nguyên state cũ.
     } catch (e) {
+      // Nếu không có cache và xảy ra lỗi, cập nhật thông báo lỗi cho state.
       if (cached == null) {
-        emit(ProductDetailError(e.toString()));
+        emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
       }
     }
   }
 
-  /// Xóa sản phẩm
-  /// Xóa cache
-  /// Nếu xóa thành công thì emit trạng thái xóa thành công
-  /// Nếu xóa thất bại thì emit trạng thái xóa thất bại
+  /// Xóa sản phẩm khỏi cache và cập nhật state với thông báo kết quả.
   Future<void> deleteProduct(int id) async {
     try {
+      // Gọi use case xóa sản phẩm (điều này giả sử deleteProduct được định nghĩa trong use case).
       await fetchDetail.deleteProduct(id);
       final box = Hive.box<ProductModel>(HiveService.productCacheBox);
       await box.delete(id);
-      emit(ProductDetailDeleted('Xóa sản phẩm thành công'));
+      // Cập nhật state với thông báo xóa thành công và đánh dấu sản phẩm đã bị xóa.
+      emit(state.copyWith(isDeleted: true, deleteMessage: 'Xóa sản phẩm thành công'));
     } catch (e) {
-      emit(ProductDetailDeleteError(e.toString()));
+      // Nếu xóa thất bại, cập nhật thông báo lỗi khi xóa.
+      emit(state.copyWith(deleteMessage: e.toString()));
     }
   }
 
+  /// Cập nhật state với thông tin sản phẩm mới.
   void updateProduct(Product product) {
-    emit(ProductDetailLoaded(product));
+    emit(state.copyWith(product: product));
   }
 }

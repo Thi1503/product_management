@@ -23,7 +23,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
   void initState() {
     super.initState();
     _cubit = context.read<ProductDetailCubit>();
-    _cubit.loadDetail(widget.productId); // Đọc BlocProvider ở trên
+    _cubit.loadDetail(widget.productId); // Khởi tạo tải chi tiết sản phẩm
   }
 
   @override
@@ -32,11 +32,19 @@ class _ProductDetailViewState extends State<ProductDetailView> {
       appBar: AppBar(title: const Text('Chi tiết sản phẩm')),
       body: BlocBuilder<ProductDetailCubit, ProductDetailState>(
         builder: (context, state) {
-          if (state is ProductDetailLoading) {
+          // Nếu đang tải và chưa có dữ liệu thì show loading
+          if (state.isLoading && state.product == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is ProductDetailLoaded) {
-            final p = state.product;
+
+          // Nếu có lỗi và chưa có dữ liệu, hiển thị thông báo lỗi
+          if (state.errorMessage != null && state.product == null) {
+            return Center(child: Text('Lỗi: ${state.errorMessage}'));
+          }
+
+          // Nếu dữ liệu đã được tải thành công thì hiển thị chi tiết sản phẩm
+          if (state.product != null) {
+            final p = state.product!;
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -53,116 +61,111 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                 Text('Giá: ${p.price}'),
                 const SizedBox(height: 8),
                 Text('Số lượng: ${p.quantity}'),
+                if (state.deleteMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    state.deleteMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ],
               ],
             );
           }
-          if (state is ProductDetailError) {
-            return Center(child: Text('Lỗi: ${state.message}'));
-          }
-          // ban đầu có thể mặc định show loading
+
+          // Mặc định hiển thị loading (để an toàn)
           return const Center(child: CircularProgressIndicator());
         },
       ),
-
-      // Nút Edit
       floatingActionButton: BlocBuilder<ProductDetailCubit, ProductDetailState>(
         builder: (context, state) {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Nút Edit
               FloatingActionButton(
                 heroTag: 'edit',
-                onPressed:
-                    state is ProductDetailLoaded
-                        ? () async {
-                          final result = await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => BlocProvider(
-                                    create: (_) => getIt<ProductFormCubit>(),
-                                    child: ProductFormPage(
-                                      product: state.product,
-                                    ),
-                                  ),
+                onPressed: state.product != null
+                    ? () async {
+                        final result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider(
+                              create: (_) => getIt<ProductFormCubit>(),
+                              child: ProductFormPage(
+                                product: state.product,
+                              ),
                             ),
-                          );
-
-                          // nếu là Product, cập nhật thẳng; còn bool thì gọi lại API
-                          if (result is Product) {
-                            context.read<ProductDetailCubit>().updateProduct(
-                              result,
-                            );
-                          } else if (result == true) {
-                            _cubit.loadDetail(widget.productId);
-                          }
+                          ),
+                        );
+                        // Nếu kết quả trả về là một Product, cập nhật trực tiếp
+                        if (result is Product) {
+                          context.read<ProductDetailCubit>().updateProduct(result);
                         }
-                        : null,
+                        // Nếu result trả về true, gọi lại loadDetail để cập nhật
+                        else if (result == true) {
+                          _cubit.loadDetail(widget.productId);
+                        }
+                      }
+                    : null,
                 child: const Icon(Icons.edit),
               ),
               const SizedBox(height: 8),
-
               // Nút Delete
               FloatingActionButton(
                 heroTag: 'delete',
-                onPressed:
-                    state is ProductDetailLoading
-                        ? null
-                        : () async {
-                          final shouldDelete = await showDialog<bool>(
-                            context: context,
-                            builder:
-                                (_) => AlertDialog(
-                                  title: const Text('Xác nhận xóa'),
-                                  content: const Text(
-                                    'Bạn có chắc muốn xóa sản phẩm này?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed:
-                                          () => Navigator.pop(context, false),
-                                      child: const Text('Hủy'),
-                                    ),
-                                    TextButton(
-                                      onPressed:
-                                          () => Navigator.pop(context, true),
-                                      child: const Text('Xóa'),
-                                    ),
-                                  ],
-                                ),
-                          );
-
-                          if (shouldDelete != true) return;
-
-                          // Hiển thị loading dialog
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder:
-                                (_) => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                          );
-
-                          try {
-                            await _cubit.deleteProduct(widget.productId);
-                            Navigator.of(context).pop(); // Đóng loading
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Xóa sản phẩm thành công'),
+                onPressed: state.isLoading
+                    ? null
+                    : () async {
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text('Xác nhận xóa'),
+                            content: const Text(
+                              'Bạn có chắc muốn xóa sản phẩm này?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Hủy'),
                               ),
-                            );
-                            Navigator.of(context).pop(true);
-                          } catch (e) {
-                            Navigator.of(context).pop(); // Đóng loading
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Xóa thất bại: ${e is Exception ? e.toString() : 'Lỗi không xác định'}',
-                                ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Xóa'),
                               ),
-                            );
-                          }
-                        },
+                            ],
+                          ),
+                        );
+
+                        if (shouldDelete != true) return;
+
+                        // Hiển thị loading dialog khi xóa
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+
+                        try {
+                          await _cubit.deleteProduct(widget.productId);
+                          Navigator.of(context).pop(); // Đóng loading dialog
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Xóa sản phẩm thành công'),
+                            ),
+                          );
+                          Navigator.of(context).pop(true);
+                        } catch (e) {
+                          Navigator.of(context).pop(); // Đóng loading dialog
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Xóa thất bại: ${e is Exception ? e.toString() : 'Lỗi không xác định'}',
+                              ),
+                            ),
+                          );
+                        }
+                      },
                 child: const Icon(Icons.delete),
               ),
             ],
