@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:product_management/core/hive/hive_service.dart';
 import 'package:product_management/core/network/dio_client.dart';
+import 'package:product_management/data/datasources/auth_remote.dart';
+import 'package:product_management/data/datasources/product_remote.dart';
 import 'package:product_management/data/repositories/auth_repository_impl.dart';
 import 'package:product_management/data/repositories/product_repository_impl.dart';
 import 'package:product_management/domain/usecases/create_product_use_case.dart';
@@ -20,16 +22,25 @@ Future<void> initDependencies() async {
   getIt.registerLazySingleton<DioClient>(() => DioClient());
   getIt.registerLazySingleton<HiveService>(() => HiveService());
 
+  // Data sources: phải register trước khi repository dùng
+  getIt.registerLazySingleton<AuthRemote>(
+    () => AuthRemote(getIt<DioClient>().dio),
+  );
+
+  getIt.registerLazySingleton<ProductRemote>(
+    () => ProductRemote(getIt<DioClient>().dio),
+  );
+
   // Repositories
   getIt.registerLazySingleton<AuthRepositoryImpl>(
     () => AuthRepositoryImpl(
-      dio: getIt<DioClient>().dio,
+      remote: getIt<AuthRemote>(),
       hive: getIt<HiveService>(),
     ),
   );
   getIt.registerLazySingleton<ProductRepositoryImpl>(
     () => ProductRepositoryImpl(
-      dio: getIt<DioClient>().dio,
+      remote: getIt<ProductRemote>(),
       hive: getIt<HiveService>(),
     ),
   );

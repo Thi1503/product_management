@@ -18,10 +18,7 @@ class ProductRemote {
     try {
       final resp = await dio.get(
         '/products',
-        queryParameters: {
-          'page': page,
-          'size': size,
-        },
+        queryParameters: {'page': page, 'size': size},
       );
       final baseResp = BaseResponseList<ProductModel>.fromJson(
         resp.data,
@@ -65,7 +62,7 @@ class ProductRemote {
     try {
       final resp = await dio.delete('/products/$id');
       final baseResp = BaseResponse<dynamic>.fromJson(resp.data, (_) => null);
-      if (baseResp.success != true) {
+      if (!baseResp.success) {
         throw Exception('Failed to delete product: ${baseResp.message}');
       }
     } on DioException catch (e) {

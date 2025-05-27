@@ -33,7 +33,7 @@ class AuthRemote {
       json,
       (data) => UserModel.fromJson(data as Map<String, dynamic>),
     );
-    if (baseResp.success != true) {
+    if (!baseResp.success) {
       // Nếu API trả về lỗi, ném exception với message từ server
       throw Exception(baseResp.message);
     }
