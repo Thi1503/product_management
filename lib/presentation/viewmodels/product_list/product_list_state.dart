@@ -1,43 +1,53 @@
+import 'package:equatable/equatable.dart';
 import 'package:product_management/domain/entities/product.dart';
 
-/// Các trạng thái của ProductListCubit
-abstract class ProductListState {
-  const ProductListState();
-}
-
-/// Khởi tạo
-class ProductListInitial extends ProductListState {}
-
-/// Đang load
-class ProductListLoading extends ProductListState {}
-
-/// Load thành công
-class ProductListLoaded extends ProductListState {
-  /// Danh sách sản phẩm
+class ProductListState extends Equatable {
   final List<Product> products;
-
-  /// Có còn trang để load thêm không
+  final bool isLoading;
+  final bool isLoadingMore;
   final bool hasMore;
+  final String? errorMessage;
 
-  const ProductListLoaded({required this.products, required this.hasMore});
+  const ProductListState({
+    required this.products,
+    required this.isLoading,
+    required this.isLoadingMore,
+    required this.hasMore,
+    this.errorMessage,
+  });
 
-  /// Tạo state mới từ state hiện tại
-  ProductListLoaded copyWith({List<Product>? products, bool? hasMore}) {
-    return ProductListLoaded(
-      products: products ?? this.products,
-      hasMore: hasMore ?? this.hasMore,
+  factory ProductListState.initial() {
+    return const ProductListState(
+      products: [],
+      isLoading: false,
+      isLoadingMore: false,
+      hasMore: true,
+      errorMessage: null,
     );
   }
-}
 
-/// Đang load thêm (từ trang cũ)
-class ProductListLoadingMore extends ProductListState {
-  final List<Product> oldProducts;
-  const ProductListLoadingMore(this.oldProducts);
-}
+  ProductListState copyWith({
+    List<Product>? products,
+    bool? isLoading,
+    bool? isLoadingMore,
+    bool? hasMore,
+    String? errorMessage,
+  }) {
+    return ProductListState(
+      products: products ?? this.products,
+      isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+      errorMessage: errorMessage,
+    );
+  }
 
-/// Load lỗi
-class ProductListError extends ProductListState {
-  final String message;
-  const ProductListError(this.message);
+  @override
+  List<Object?> get props => [
+    products,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    errorMessage,
+  ];
 }
