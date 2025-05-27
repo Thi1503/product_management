@@ -43,13 +43,11 @@ class _ProductListPageState extends State<ProductListPage> {
     final cubit = context.read<ProductListCubit>();
     final prevLength = cubit.state.products.length;
     await cubit.loadMore();
-    // Kiểm tra trạng thái hasMore để báo cho controller
-    if (!cubit.state.hasMore) {
-      _refreshController.loadNoData();
-    } else if (cubit.state.products.length > prevLength) {
+    if (cubit.state.products.length > prevLength) {
       _refreshController.loadComplete();
     } else {
-      _refreshController.loadComplete();
+      // Nếu API trả về list rỗng thì báo là đã load hết dữ liệu
+      _refreshController.loadNoData();
     }
   }
 
@@ -101,26 +99,35 @@ class _ProductListPageState extends State<ProductListPage> {
             return Center(child: Text(state.errorMessage!));
           }
 
-          // Hiển thị danh sách sản phẩm (và loading more nếu có)
+          // Sử dụng footer của SmartRefresher để hiển thị loading tự động khi loadMore.
           return SmartRefresher(
             controller: _refreshController,
             enablePullDown: true,
             enablePullUp: true,
+            footer: CustomFooter(
+              builder: (context, mode) {
+                Widget body;
+                if (mode == LoadStatus.idle) {
+                  body = const Text("Kéo để load thêm");
+                } else if (mode == LoadStatus.loading) {
+                  body = const CircularProgressIndicator();
+                } else if (mode == LoadStatus.failed) {
+                  body = const Text("Tải thất bại! Nhấn retry!");
+                } else if (mode == LoadStatus.canLoading) {
+                  body = const Text("Thả để tải thêm");
+                } else {
+                  body = const Text("Hết dữ liệu");
+                }
+                return SizedBox(height: 55, child: Center(child: body));
+              },
+            ),
             onRefresh: _onRefresh,
             onLoading: _onLoading,
             child: ListView.builder(
               key: const PageStorageKey('productList'),
-              itemCount: state.products.length + (state.isLoadingMore ? 1 : 0),
+              itemCount: state.products.length,
               itemBuilder: (ctx, i) {
-                if (i < state.products.length) {
-                  return ProductItem(product: state.products[i]);
-                } else {
-                  // Hiển thị loading indicator ở cuối danh sách khi đang load more
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+                return ProductItem(product: state.products[i]);
               },
             ),
           );
@@ -128,9 +135,9 @@ class _ProductListPageState extends State<ProductListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final created = await Navigator.of(
-            context,
-          ).push<bool>(MaterialPageRoute(builder: (ctx) => ProductFormPage()));
+          final created = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(builder: (ctx) => ProductFormPage()),
+          );
           if (created == true) {
             context.read<ProductListCubit>().refresh();
           }
