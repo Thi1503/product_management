@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:product_management/data/models/product_model.dart';
 import 'package:product_management/domain/entities/product.dart';
 import 'package:product_management/presentation/viewmodels/product_form/product_form_cubit.dart';
+import 'package:product_management/presentation/viewmodels/product_form/product_form_state.dart';
 
 class ProductFormView extends StatefulWidget {
   final Product? product;
@@ -64,14 +65,15 @@ class _ProductFormViewState extends State<ProductFormView> {
   Widget build(BuildContext context) {
     return BlocConsumer<ProductFormCubit, ProductFormState>(
       listener: (ctx, state) {
-        if (state is ProductFormSuccess) {
+        // Nếu có product thì coi như thành công và đóng màn hình
+        if (state.product != null) {
           FocusScope.of(ctx).unfocus();
           Navigator.of(ctx).pop(true);
         }
-        if (state is ProductFormError) {
-          ScaffoldMessenger.of(
-            ctx,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+        // Nếu có lỗi, hiển thị thông báo
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(ctx)
+              .showSnackBar(SnackBar(content: Text(state.errorMessage!)));
         }
       },
       builder: (ctx, state) {
@@ -81,106 +83,104 @@ class _ProductFormViewState extends State<ProductFormView> {
               widget.product == null ? 'Tạo Sản Phẩm' : 'Cập Nhật Sản Phẩm',
             ),
           ),
-          body:
-              state is ProductFormLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Form(
-                      key: _formKey,
-                      autovalidateMode:
-                          _autovalidate
-                              ? AutovalidateMode.always
-                              : AutovalidateMode.disabled,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Tên sản phẩm',
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Vui lòng nhập tên sản phẩm';
-                              }
-                              return null;
+          body: state.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    autovalidateMode: _autovalidate
+                        ? AutovalidateMode.always
+                        : AutovalidateMode.disabled,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Tên sản phẩm',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Vui lòng nhập tên sản phẩm';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _priceController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Giá sản phẩm',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập giá';
+                            }
+                            final price = int.tryParse(value);
+                            if (price == null || price < 0) {
+                              return 'Giá không hợp lệ';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _quantityController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Số lượng sản phẩm',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập số lượng';
+                            }
+                            final qty = int.tryParse(value);
+                            if (qty == null || qty < 0) {
+                              return 'Số lượng không hợp lệ';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _coverController,
+                          keyboardType: TextInputType.url,
+                          decoration: const InputDecoration(
+                            labelText: 'Link ảnh sản phẩm',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Vui lòng nhập link ảnh';
+                            }
+                            final uri = Uri.tryParse(value);
+                            if (uri == null || !uri.hasAbsolutePath) {
+                              return 'Link không hợp lệ';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _autovalidate = true;
+                              });
+                              _onSave();
                             },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _priceController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Giá sản phẩm',
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Vui lòng nhập giá';
-                              }
-                              final price = int.tryParse(value);
-                              if (price == null || price < 0) {
-                                return 'Giá không hợp lệ';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _quantityController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Số lượng sản phẩm',
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Vui lòng nhập số lượng';
-                              }
-                              final qty = int.tryParse(value);
-                              if (qty == null || qty < 0) {
-                                return 'Số lượng không hợp lệ';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _coverController,
-                            keyboardType: TextInputType.url,
-                            decoration: const InputDecoration(
-                              labelText: 'Link ảnh sản phẩm',
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Vui lòng nhập link ảnh';
-                              }
-                              final uri = Uri.tryParse(value);
-                              if (uri == null || !uri.hasAbsolutePath) {
-                                return 'Link không hợp lệ';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _autovalidate = true;
-                                });
-                                _onSave();
-                              },
-                              child: Text(
-                                widget.product == null
-                                    ? 'Tạo Sản Phẩm'
-                                    : 'Cập Nhật',
-                              ),
+                            child: Text(
+                              widget.product == null
+                                  ? 'Tạo Sản Phẩm'
+                                  : 'Cập Nhật',
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+                ),
         );
       },
     );
